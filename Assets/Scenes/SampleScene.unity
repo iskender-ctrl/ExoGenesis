@@ -150,6 +150,66 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &130000201
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 130000203}
+  - component: {fileID: 130000204}
+  - component: {fileID: 130000205}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &130000203
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 130000201}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.0626495, y: 0, z: 0.34493297}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &130000204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 130000201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 257117b95bf3c764586c214e8e66f67d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spaceObjectsParent: {fileID: 248593866}
+  celestialBodyData: {fileID: 11400000, guid: fa32b976cb5063c4ca6baf094013cfb3, type: 2}
+--- !u!114 &130000205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 130000201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a4d13434b4109f42aa3ac4efb6b15dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gravityFieldMaterial: {fileID: 2100000, guid: f02cc6d5a5a02c745925f319f6be571f, type: 2}
 --- !u!1 &248593865
 GameObject:
   m_ObjectHideFlags: 0
@@ -160,7 +220,6 @@ GameObject:
   m_Component:
   - component: {fileID: 248593866}
   - component: {fileID: 248593868}
-  - component: {fileID: 248593867}
   m_Layer: 0
   m_Name: SpaceObjects
   m_TagString: Untagged
@@ -186,20 +245,6 @@ Transform:
   - {fileID: 1216742483}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &248593867
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248593865}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31213fb2742b9634d8f5ea26563cf43f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  celestialBodyData: {fileID: 11400000, guid: fa32b976cb5063c4ca6baf094013cfb3, type: 2}
-  sphereMaterial: {fileID: 2100000, guid: f02cc6d5a5a02c745925f319f6be571f, type: 2}
 --- !u!114 &248593868
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -212,7 +257,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38296c0e81c258a45bcbb8e9b20f8d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data: {fileID: 11400000, guid: fa32b976cb5063c4ca6baf094013cfb3, type: 2}
 --- !u!1 &279650854
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,8 +301,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9798eb75aec62a2438bf60268c1cad43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravitationalConstant: 0.003
-  radiusMultiplier: 0.021
+  gravitationalConstant: 0.0005
+  radiusMultiplier: 0.022
   orbitalSpeedMultiplier: 2
 --- !u!1 &330585543
 GameObject:
@@ -735,7 +779,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e26dd11f0b7bbb04a9778b9cf92998d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rocketPrefab: {fileID: 3112586871799503944, guid: d5d4b8bdfd6de0b44bc5d9ac4ef20ed1, type: 3}
+  rocketPrefab: {fileID: 4035946463741931118, guid: d5d4b8bdfd6de0b44bc5d9ac4ef20ed1, type: 3}
   spawnPoint: {fileID: 101617865}
   launchSpeed: 1
   rocketLifetime: 10
@@ -812,3 +856,4 @@ SceneRoots:
   - {fileID: 1477985639}
   - {fileID: 279650855}
   - {fileID: 101617865}
+  - {fileID: 130000203}
