@@ -32,23 +32,45 @@ public class GravitationalAssist : MonoBehaviour
         UpdateRotation();
     }
 
+    public GameObject spaceObjectsParent; // SpaceObjects objesi için referans
+
     void OnTriggerStay(Collider other)
     {
-        // Çekim alanına girdiğinde çalışır
         if (other.CompareTag("GravityField"))
         {
-            // Çekim alanına sahip gezegeni bul
-            string planetName = other.transform.name;
-            var body = celestialBodies.Find(b => b.bodyName == planetName);
-            
-            if (body != null)
+            Debug.Log($"GravityField tetiklendi: {other.name}");
+
+            // Gezegenleri SpaceObjects parent'ı üzerinden kontrol et
+            foreach (var body in celestialBodies)
             {
-                
-                ApplyGravitationalAssist(body, other.transform.position);
-                Debug.Log("çekim alanına girdi");
+                Debug.Log($"Kontrol edilen gezegen: {body.bodyName}");
+
+                // SpaceObjects altından gezegeni bul
+                Transform planetTransform = spaceObjectsParent.transform.Find(body.bodyName);
+                if (planetTransform == null)
+                {
+                    Debug.LogWarning($"Gezegen bulunamadı: {body.bodyName}");
+                    continue;
+                }
+
+                // Child objeleri kontrol et
+                foreach (Transform child in planetTransform)
+                {
+                    Debug.Log($"Kontrol edilen child obje: {child.name}");
+                    if (other.transform == child)
+                    {
+                        ApplyGravitationalAssist(body, other.transform.position);
+                        Debug.Log($"{body.bodyName} çekim alanına girdi (child obje: {child.name}).");
+                        return;
+                    }
+                }
             }
+
+            Debug.LogWarning("GravityField bir gezegenle eşleşmedi.");
         }
     }
+
+
 
     void ApplyGravitationalAssist(CelestialBodyData.CelestialBody body, Vector3 gravityCenter)
     {

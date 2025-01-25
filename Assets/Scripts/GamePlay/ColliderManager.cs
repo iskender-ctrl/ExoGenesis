@@ -30,9 +30,9 @@ public class ColliderManager : MonoBehaviour
         // Çapı hesapla ve uygula
         float globalScale = planet.lossyScale.x;
         float radius = Mathf.Sqrt(bodyData.mass) * GravitySettings.RadiusMultiplier / globalScale;
-        gravitySphere.transform.localScale = new Vector3(radius*2, radius*2, radius*2);
+        gravitySphere.transform.localScale = new Vector3(radius * 2, radius * 2, radius * 2);
 
-        //Collider ekle
+        // Collider ekle
         SphereCollider gravityCollider = gravitySphere.GetComponent<SphereCollider>();
         if (gravityCollider == null)
         {
@@ -41,17 +41,15 @@ public class ColliderManager : MonoBehaviour
 
         // Collider'ı ayarla
         gravityCollider.isTrigger = true; // Yerçekim alanı için tetikleyici olarak ayarla
-        gravityCollider.radius = radius*25;
+        gravityCollider.radius = radius * 25;
 
-        // Materyal 
+        // Materyal ekle
         MeshRenderer renderer = gravitySphere.GetComponent<MeshRenderer>();
         if (sphereMaterial != null)
         {
             renderer.material = sphereMaterial;
         }
     }
-
-
 
     private void AddPlanetMeshCollider(Transform planet, CelestialBodyData.CelestialBody bodyData)
     {
@@ -71,7 +69,5 @@ public class ColliderManager : MonoBehaviour
             meshCollider.isTrigger = false;                 // isTrigger özelliğini ata
             meshCollider.convex = false;                    // Convex ayarını ata (gerekiyorsa)
         }
-
-
     }
 }
