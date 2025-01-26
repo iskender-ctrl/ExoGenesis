@@ -44,7 +44,13 @@ public class GravityManager : MonoBehaviour
 
         // Renderer ve materyal ayarı
         MeshRenderer renderer = sphereVisual.GetComponent<MeshRenderer>();
-        renderer.material = gravityFieldMaterial;
+        // Yeni materyal örneği oluştur
+        Material newMaterial = new Material(gravityFieldMaterial);
+        renderer.material = newMaterial;
+
+        // GravityColor değerini ayarla (mass'tan alınıyor)
+        float normalizedMass = Mathf.Clamp(bodyData.mass, 0, 450); // 0-1 arasında normalize et
+        newMaterial.SetFloat("_Gravity", normalizedMass);
 
         // Collider görselinin fiziksel etkisini kaldır (sadece görsel için)
         Destroy(sphereVisual.GetComponent<Collider>());

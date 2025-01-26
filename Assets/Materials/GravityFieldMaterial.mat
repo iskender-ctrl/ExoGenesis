@@ -65,7 +65,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Pattern:
-        m_Texture: {fileID: 2800000, guid: e51a53c9051628c48ac2b1ff8922deef, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
@@ -104,15 +104,16 @@ Material:
     - _EdgeSoftness: 0.2
     - _EnvironmentReflections: 1
     - _FresnelPower: 1
-    - _Fresnel_Power: 3.78
+    - _Fresnel_Power: 7.31
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _Gravity: 400
     - _Metallic: 0
     - _Mode: 0
     - _NoiseScale: 1
     - _OcclusionStrength: 1
-    - _Offset: 3.14
+    - _Offset: 0
     - _Parallax: 0.005
     - _QueueControl: 0
     - _QueueOffset: 7
@@ -133,8 +134,10 @@ Material:
     - _Center: {r: 0, g: 0, b: 0, a: 0}
     - _CenterPosition: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Emission: {r: 5.0284576, g: 21.755775, b: 15.861212, a: 0}
+    - _Emission: {r: 40.554325, g: 13.925336, b: 5.164938, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _GravityColor1: {r: 12.250737, g: 12.279911, b: 10.947657, a: 0}
+    - _GravityColor2: {r: 22.36353, g: 2.1075578, b: 21.918653, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

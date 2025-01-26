@@ -9,6 +9,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: ab25924d04484ad4bb443e9ec75e8e7a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.9765699
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ab25924d04484ad4bb443e9ec75e8e7a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.9765699
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ab25924d04484ad4bb443e9ec75e8e7a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.9765699
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ab25924d04484ad4bb443e9ec75e8e7a, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0
       objectReference: {fileID: 0}
@@ -183,13 +195,13 @@ TrailRenderer:
   m_PreviewTimeScale: 1
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.05
+    widthMultiplier: 0.02
     widthCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0.0028915405
-        value: 0.6078377
+        time: 0
+        value: 0.35947037
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -197,8 +209,8 @@ TrailRenderer:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.965332
-        value: 0.13072205
+        time: 0.92776483
+        value: 0.026153564
         inSlope: 0
         outSlope: 0
         tangentMode: 0
