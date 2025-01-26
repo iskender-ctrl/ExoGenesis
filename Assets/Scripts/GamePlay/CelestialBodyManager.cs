@@ -5,7 +5,6 @@ public class CelestialBodyManager : MonoBehaviour
 {
     private List<GameObject> celestialObjects = new List<GameObject>();
     private Dictionary<string, GameObject> celestialObjectMap = new Dictionary<string, GameObject>();
-
     void Start()
     {
         // Sahnedeki gökcisimlerini organize et
@@ -27,7 +26,7 @@ public class CelestialBodyManager : MonoBehaviour
                 if (child.tag != "CelestialBody")
                 {
                     child.tag = "CelestialBody";
-                }
+                } 
             }
         }
     }

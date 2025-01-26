@@ -2,14 +2,9 @@ using UnityEngine;
 
 public class GravitySettings : MonoBehaviour
 {
-    [Header("Yerçekimi Ayarları")]
-    [Tooltip("Yerçekimi sabiti. Çekim kuvveti hesaplamaları için kullanılır.")]
+    [Header("Gravity Settings")]
     public float gravitationalConstant = 0.1f;
-
-    [Tooltip("Görsel çekim alanlarının boyutunu kontrol eder.")]
     public float radiusMultiplier = 1f;
-
-    [Tooltip("Yörüngesel hız hesaplamaları için çarpan.")]
     public float orbitalSpeedMultiplier = 1f;
 
     // Singleton instance
@@ -21,10 +16,6 @@ public class GravitySettings : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject); // Birden fazla GravitySettings varsa yok et
         }
     }
 
