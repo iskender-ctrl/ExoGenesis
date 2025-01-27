@@ -35,7 +35,14 @@ public class GravityManager : MonoBehaviour
         gravityCollider.radius = Mathf.Sqrt(bodyData.mass) * GravitySettings.RadiusMultiplier;
 
         // GravityField objesini etiketle
-        gravityField.tag = "GravityField";
+        if (bodyData.isTarget)
+        {
+            gravityField.tag = "TargetField";
+        }
+        else
+        {
+            gravityField.tag = "GravityField";
+        }
 
         // Küre görseli oluştur
         GameObject sphereVisual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -49,13 +56,57 @@ public class GravityManager : MonoBehaviour
         Material newMaterial = new Material(gravityFieldMaterial);
         renderer.material = newMaterial;
 
+        float intensity1 = 0.3f;
+        float intensity2 = 0.1f;
+        // GravityColor veya Color değerini ayarla
+        if (bodyData.isTarget)
+        {
+
+            // TargetField için renkler
+            newMaterial.SetColor("_GravityColor1", new Color(255f, 0f, 0f) * intensity1);    // Birinci renk
+            newMaterial.SetColor("_GravityColor2", new Color(255f, 0f, 0f) * intensity2); // İkinci renk
+        }
+        else
+        {
+            newMaterial.SetColor("_GravityColor1", new Color(255f, 255f, 255f) * intensity1);    // Birinci renk
+            newMaterial.SetColor("_GravityColor2", new Color(191f, 18f, 188f) * intensity2);   // İkinci renk
+        }
+
         // GravityColor değerini ayarla (mass'tan alınıyor)
-        float normalizedMass = Mathf.Clamp(bodyData.mass, 0, 450); // 0-1 arasında normalize et
+        float normalizedMass = Mathf.Clamp(bodyData.mass, 0, 400); // 0-1 arasında normalize et
         newMaterial.SetFloat("_Gravity", normalizedMass);
 
         // Collider görselinin fiziksel etkisini kaldır (sadece görsel için)
         Destroy(sphereVisual.GetComponent<Collider>());
     }
+    private float CalculatePlanetRadius(CelestialBodyData.CelestialBody body)
+    {
+        // Gezegen objesini sahnede bul
+        GameObject planet = GameObject.Find(body.bodyName);
+        if (planet == null)
+        {
+            Debug.LogError($"Gezegen objesi bulunamadı: {body.bodyName}");
+            return 1.0f; // Varsayılan bir yarıçap
+        }
+
+        // Gezegenin `SphereCollider` boyutunu kullanarak yarıçapı hesapla
+        SphereCollider sphereCollider = planet.GetComponent<SphereCollider>();
+        if (sphereCollider != null)
+        {
+            return planet.transform.lossyScale.x * sphereCollider.radius; // Global yarıçap
+        }
+
+        // Eğer `SphereCollider` yoksa, `Renderer`'dan boyut al
+        Renderer renderer = planet.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            return planet.transform.lossyScale.x * 0.5f * renderer.bounds.size.x; // Kabaca yarıçap
+        }
+
+        Debug.LogError("Gezegenin yüzey yarıçapı hesaplanamadı.");
+        return 1.0f; // Varsayılan bir yarıçap
+    }
+
 
     private void AddPlanetCollider(Transform planet)
     {

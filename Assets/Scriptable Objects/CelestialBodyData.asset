@@ -18,48 +18,58 @@ MonoBehaviour:
     rotationSpeed: 20
     prefab: {fileID: 919132149155446097, guid: b6d824575c2ad644d94c387998686255, type: 3}
     orbitAround: Sun
+    isTarget: 0
   - bodyName: Jupiter
     mass: 300
     rotationSpeed: 45
     prefab: {fileID: 919132149155446097, guid: d60837f51a4a6d846b37d617da60d3cb, type: 3}
     orbitAround: Sun
+    isTarget: 0
   - bodyName: Mars
-    mass: 120
+    mass: 180
     rotationSpeed: 40
     prefab: {fileID: 919132149155446097, guid: a9554f2ec8e804b459411fab81c7e612, type: 3}
     orbitAround: Sun
+    isTarget: 1
   - bodyName: Mercury
     mass: 90
     rotationSpeed: 30
     prefab: {fileID: 919132149155446097, guid: 27d472af38cd6b54b8a96ef4c8cde83a, type: 3}
     orbitAround: Sun
+    isTarget: 0
   - bodyName: Moon
     mass: 80
     rotationSpeed: 30
     prefab: {fileID: 919132149155446097, guid: 1306605407685334493de5602bd66d2c, type: 3}
     orbitAround: Sun
+    isTarget: 0
   - bodyName: Neptune
     mass: 180
     rotationSpeed: 20
     prefab: {fileID: 919132149155446097, guid: cb5ca177b6f2c3c488320ec4c164dc9e, type: 3}
     orbitAround: Sun
+    isTarget: 0
   - bodyName: Saturn
     mass: 200
     rotationSpeed: 50
     prefab: {fileID: 919132149155446097, guid: 7b89ef3ed4fe6b94d9241a706cda0e6e, type: 3}
     orbitAround: Sun
+    isTarget: 0
   - bodyName: Sun
     mass: 400
     rotationSpeed: 30
     prefab: {fileID: 919132149155446097, guid: 92fa66eb789120241b983c2b51600755, type: 3}
     orbitAround: 
+    isTarget: 0
   - bodyName: Uranus
     mass: 250
     rotationSpeed: 35
     prefab: {fileID: 919132149155446097, guid: 282ec89995d6d1f4dbb0bee04cc4cdd9, type: 3}
     orbitAround: Sun
+    isTarget: 0
   - bodyName: Venus
     mass: 120
     rotationSpeed: 45
     prefab: {fileID: 919132149155446097, guid: b206a7dc52d08634fbd73c83ea35b6c2, type: 3}
     orbitAround: Sun
+    isTarget: 0

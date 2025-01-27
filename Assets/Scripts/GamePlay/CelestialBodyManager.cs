@@ -22,11 +22,14 @@ public class CelestialBodyManager : MonoBehaviour
                 celestialObjects.Add(child.gameObject);
                 celestialObjectMap[child.name] = child.gameObject;
 
-                // "CelestialBody" tag'ini ekleyin
-                if (child.tag != "CelestialBody")
+                if (bodyData.isTarget)
+                {
+                    child.tag = "Target";
+                }
+                else
                 {
                     child.tag = "CelestialBody";
-                } 
+                }
             }
         }
     }
