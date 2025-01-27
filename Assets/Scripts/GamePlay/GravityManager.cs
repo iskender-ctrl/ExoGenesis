@@ -79,33 +79,6 @@ public class GravityManager : MonoBehaviour
         // Collider görselinin fiziksel etkisini kaldır (sadece görsel için)
         Destroy(sphereVisual.GetComponent<Collider>());
     }
-    private float CalculatePlanetRadius(CelestialBodyData.CelestialBody body)
-    {
-        // Gezegen objesini sahnede bul
-        GameObject planet = GameObject.Find(body.bodyName);
-        if (planet == null)
-        {
-            Debug.LogError($"Gezegen objesi bulunamadı: {body.bodyName}");
-            return 1.0f; // Varsayılan bir yarıçap
-        }
-
-        // Gezegenin `SphereCollider` boyutunu kullanarak yarıçapı hesapla
-        SphereCollider sphereCollider = planet.GetComponent<SphereCollider>();
-        if (sphereCollider != null)
-        {
-            return planet.transform.lossyScale.x * sphereCollider.radius; // Global yarıçap
-        }
-
-        // Eğer `SphereCollider` yoksa, `Renderer`'dan boyut al
-        Renderer renderer = planet.GetComponent<Renderer>();
-        if (renderer != null)
-        {
-            return planet.transform.lossyScale.x * 0.5f * renderer.bounds.size.x; // Kabaca yarıçap
-        }
-
-        Debug.LogError("Gezegenin yüzey yarıçapı hesaplanamadı.");
-        return 1.0f; // Varsayılan bir yarıçap
-    }
 
 
     private void AddPlanetCollider(Transform planet)

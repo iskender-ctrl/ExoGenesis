@@ -104,7 +104,7 @@ Material:
     - _EdgeSoftness: 0.2
     - _EnvironmentReflections: 1
     - _FresnelPower: 1
-    - _Fresnel_Power: 12.7
+    - _Fresnel_Power: 15.74
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
