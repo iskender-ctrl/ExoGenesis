@@ -3,59 +3,95 @@ using UnityEngine;
 public class RocketLauncher : MonoBehaviour
 {
     [Header("Roket Ayarları")]
-    public GameObject rocketPrefab; // Fırlatılacak roket prefabı
-    public Transform spawnPoint;   // Roketin çıkış noktası
-    public float launchSpeed = 20f; // Roketin fırlatma hızı
-    public float rocketLifetime = 10f; // Roketin sahnede kalma süresi (saniye)
+    public GameObject rocketPrefab;
+    public Transform spawnPoint;
+    public float launchSpeed = 20f;
+    public float rocketLifetime = 10f;
 
-    private bool isMouseHeld = false; // Mouse basılı tutuluyor mu?
+    [Header("Çizgi Ayarları")]
+    [SerializeField] private LineRenderer guideLine;
+    [SerializeField] private float dashSize = 5f;
+
+    private Camera mainCamera;
+    private bool isMouseHeld = false;
+
+    void Start()
+    {
+        mainCamera = Camera.main;
+        InitializeGuideLine();
+    }
 
     void Update()
     {
-        // Mouse sol tuşuna basma kontrolü
-        if (Input.GetMouseButtonDown(0))
+        HandleInput();
+        UpdateGuideLine();
+    }
+
+    private void InitializeGuideLine()
+    {
+        guideLine.positionCount = 2;
+        guideLine.enabled = false;
+        guideLine.material = new Material(Shader.Find("Sprites/Default"));
+        guideLine.startColor = Color.white;
+        guideLine.endColor = Color.white;
+        guideLine.textureMode = LineTextureMode.Tile;
+        guideLine.material.mainTexture = CreateDashedTexture();
+        guideLine.material.mainTextureScale = new Vector2(1f/dashSize, 1);
+    }
+
+    private Texture2D CreateDashedTexture()
+    {
+        Texture2D tex = new Texture2D(4, 1);
+        tex.SetPixels(new Color[] {Color.cyan, Color.cyan, Color.clear, Color.clear});
+        tex.Apply();
+        return tex;
+    }
+
+    private void HandleInput()
+    {
+        if(Input.GetMouseButtonDown(0))
         {
             isMouseHeld = true;
+            guideLine.enabled = true;
         }
-
-        // Mouse sol tuşunu bırakma kontrolü
-        if (Input.GetMouseButtonUp(0) && isMouseHeld)
+        
+        if(Input.GetMouseButtonUp(0) && isMouseHeld)
         {
-            FireRocket(); // Roketi fırlat
+            FireRocket();
             isMouseHeld = false;
+            guideLine.enabled = false;
         }
     }
 
-    void FireRocket()
+    private void UpdateGuideLine()
     {
-        // Mouse'un sahnedeki pozisyonunu hesapla
-        Vector3 targetPosition = GetMouseWorldPosition();
-        Vector3 direction = (targetPosition - spawnPoint.position).normalized;
+        if(!isMouseHeld) return;
 
-        // Roketi spawn et ve yönlendirme ver
-        Quaternion rotation = Quaternion.LookRotation(direction);
-        GameObject rocket = Instantiate(rocketPrefab, spawnPoint.position, rotation);
+        Vector3 mouseWorldPos = GetMouseWorldPosition();
+        
+        // Çizgiyi spawnPoint'ten mouse pozisyonuna çek
+        guideLine.SetPosition(0, spawnPoint.position);
+        guideLine.SetPosition(1, mouseWorldPos);
+    }
 
-        // Rigidbody bileşenine hız uygula
+    private Vector3 GetMouseWorldPosition()
+    {
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        Plane groundPlane = new Plane(Vector3.up, spawnPoint.position);
+        return groundPlane.Raycast(ray, out float distance) ? 
+            ray.GetPoint(distance) : 
+            spawnPoint.position + spawnPoint.forward * 10f;
+    }
+
+    private void FireRocket()
+    {
+        Vector3 targetPos = GetMouseWorldPosition();
+        Vector3 direction = (targetPos - spawnPoint.position).normalized;
+        
+        GameObject rocket = Instantiate(rocketPrefab, spawnPoint.position, Quaternion.LookRotation(direction));
         Rigidbody rb = rocket.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.linearVelocity = direction * launchSpeed;
-        }
-
-        // Roketi belirli bir süre sonra yok et
+        if(rb != null) rb.linearVelocity = direction * launchSpeed;
+        
         Destroy(rocket, rocketLifetime);
-    }
-
-    Vector3 GetMouseWorldPosition()
-    {
-        // Mouse'un dünya uzayındaki pozisyonunu hesapla
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Plane xzPlane = new Plane(Vector3.up, Vector3.zero); // XZ düzlemi
-        if (xzPlane.Raycast(ray, out float distance))
-        {
-            return ray.GetPoint(distance); // Mouse'un dünya koordinatını döndür
-        }
-        return Vector3.zero;
     }
 }
