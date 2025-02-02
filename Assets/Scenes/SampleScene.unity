@@ -305,7 +305,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9798eb75aec62a2438bf60268c1cad43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravitationalConstant: 0.0004
+  gravitationalConstant: 0.0006
   radiusMultiplier: 0.03
   orbitalSpeedMultiplier: 0
 --- !u!1001 &321727480
@@ -318,7 +318,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: cb5ca177b6f2c3c488320ec4c164dc9e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.202
+      value: 0.023
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cb5ca177b6f2c3c488320ec4c164dc9e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -326,7 +326,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cb5ca177b6f2c3c488320ec4c164dc9e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.138
+      value: -0.975
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cb5ca177b6f2c3c488320ec4c164dc9e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1285,7 +1285,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rocketPrefab: {fileID: 4035946463741931118, guid: d5d4b8bdfd6de0b44bc5d9ac4ef20ed1, type: 3}
   spawnPoint: {fileID: 101617865}
-  launchSpeed: 1.29
+  launchSpeed: 1.2
   rocketLifetime: 10
   guideLine: {fileID: 1477985641}
   dashedLineMaterial: {fileID: 2100000, guid: 23f8be3a2d1bbcc45bc5d43b75596436, type: 2}
