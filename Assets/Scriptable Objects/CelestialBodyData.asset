@@ -48,7 +48,7 @@ MonoBehaviour:
     rotationSpeed: 20
     prefab: {fileID: 919132149155446097, guid: cb5ca177b6f2c3c488320ec4c164dc9e, type: 3}
     orbitAround: Sun
-    isTarget: 1
+    isTarget: 0
   - bodyName: Saturn
     mass: 200
     rotationSpeed: 50

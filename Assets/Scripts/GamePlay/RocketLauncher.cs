@@ -9,11 +9,12 @@ public class RocketLauncher : MonoBehaviour
     public float rocketLifetime = 10f;
 
     [Header("Çizgi Ayarları")]
-    [SerializeField] private LineRenderer guideLine;
-    [SerializeField] private float dashSize = 5f;
+    public LineRenderer guideLine;
+    public Material dashedLineMaterial;
+    public float lineMaxLength = 50f;
 
     private Camera mainCamera;
-    private bool isMouseHeld = false;
+    private bool isTouching = false;
 
     void Start()
     {
@@ -29,69 +30,77 @@ public class RocketLauncher : MonoBehaviour
 
     private void InitializeGuideLine()
     {
+        if (guideLine == null)
+        {
+            Debug.LogError("Line Renderer bileşeni atanmamış!");
+            return;
+        }
+
         guideLine.positionCount = 2;
         guideLine.enabled = false;
-        guideLine.material = new Material(Shader.Find("Sprites/Default"));
-        guideLine.startColor = Color.white;
-        guideLine.endColor = Color.white;
+        guideLine.material = dashedLineMaterial;
         guideLine.textureMode = LineTextureMode.Tile;
-        guideLine.material.mainTexture = CreateDashedTexture();
-        guideLine.material.mainTextureScale = new Vector2(1f/dashSize, 1);
-    }
-
-    private Texture2D CreateDashedTexture()
-    {
-        Texture2D tex = new Texture2D(4, 1);
-        tex.SetPixels(new Color[] {Color.cyan, Color.cyan, Color.clear, Color.clear});
-        tex.Apply();
-        return tex;
     }
 
     private void HandleInput()
     {
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began))
         {
-            isMouseHeld = true;
+            isTouching = true;
             guideLine.enabled = true;
         }
-        
-        if(Input.GetMouseButtonUp(0) && isMouseHeld)
+
+        if ((Input.GetMouseButtonUp(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Ended)) && isTouching)
         {
             FireRocket();
-            isMouseHeld = false;
+            isTouching = false;
             guideLine.enabled = false;
         }
     }
 
     private void UpdateGuideLine()
     {
-        if(!isMouseHeld) return;
+        if (!isTouching) return;
 
-        Vector3 mouseWorldPos = GetMouseWorldPosition();
-        
-        // Çizgiyi spawnPoint'ten mouse pozisyonuna çek
+        Vector3 targetPos = GetTouchOrMousePosition();
+        Vector3 launchDirection = (targetPos - spawnPoint.position).normalized;
+
         guideLine.SetPosition(0, spawnPoint.position);
-        guideLine.SetPosition(1, mouseWorldPos);
+        guideLine.SetPosition(1, spawnPoint.position + launchDirection * lineMaxLength);
     }
 
-    private Vector3 GetMouseWorldPosition()
+    private Vector3 GetTouchOrMousePosition()
     {
-        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        if (Input.touchCount > 0)
+        {
+            return GetWorldPosition(Input.GetTouch(0).position);
+        }
+        return GetWorldPosition(Input.mousePosition);
+    }
+
+    private Vector3 GetWorldPosition(Vector2 screenPosition)
+    {
+        Ray ray = mainCamera.ScreenPointToRay(screenPosition);
         Plane groundPlane = new Plane(Vector3.up, spawnPoint.position);
-        return groundPlane.Raycast(ray, out float distance) ? 
-            ray.GetPoint(distance) : 
-            spawnPoint.position + spawnPoint.forward * 10f;
+        if (groundPlane.Raycast(ray, out float distance))
+        {
+            return ray.GetPoint(distance);
+        }
+        return spawnPoint.position + spawnPoint.forward * 10f;
     }
 
     private void FireRocket()
     {
-        Vector3 targetPos = GetMouseWorldPosition();
+        Vector3 targetPos = GetTouchOrMousePosition();
         Vector3 direction = (targetPos - spawnPoint.position).normalized;
-        
+
         GameObject rocket = Instantiate(rocketPrefab, spawnPoint.position, Quaternion.LookRotation(direction));
         Rigidbody rb = rocket.GetComponent<Rigidbody>();
-        if(rb != null) rb.linearVelocity = direction * launchSpeed;
-        
+        if (rb != null)
+        {
+            rb.linearVelocity = direction * launchSpeed;
+        }
+
         Destroy(rocket, rocketLifetime);
     }
 }
