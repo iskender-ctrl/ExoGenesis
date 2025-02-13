@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 public class RocketBehavior : MonoBehaviour
 {
@@ -9,11 +10,16 @@ public class RocketBehavior : MonoBehaviour
     private Transform currentTarget;
     private float initialDistance;
     private Vector3 orbitDirection;
+    public TextMeshProUGUI speedText; // Hız göstergesi prefab'ı
     [SerializeField] private GameObject explosionPrefab;
 
     void Start()
     {
         rocketRigidbody = GetComponent<Rigidbody>();
+        if (speedText == null)
+        {
+            speedText = GetComponentInChildren<TextMeshProUGUI>(); // Roketin child objeleri içinde Text bileşenini bul
+        }
     }
 
     void FixedUpdate()
@@ -25,8 +31,16 @@ public class RocketBehavior : MonoBehaviour
     void Update()
     {
         UpdateRotation();
+        UpdateSpeedUI();
     }
-
+    private void UpdateSpeedUI()
+    {
+        if (speedText != null && rocketRigidbody != null)
+        {
+            float speed = rocketRigidbody.linearVelocity.magnitude;
+            speedText.text = $"{speed:F1} m/s";
+        }
+    }
     void OnTriggerEnter(Collider other)
     {
         switch (other.tag)
