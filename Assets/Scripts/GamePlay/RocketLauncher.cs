@@ -7,6 +7,7 @@ public class RocketLauncher : MonoBehaviour
     public Transform spawnPoint;
     public float launchSpeed = 20f;
     public float rocketLifetime = 10f;
+    private FuelSystem fuelSystem; // Yakıt sistemi referansı
 
     [Header("Çizgi Ayarları")]
     public LineRenderer guideLine;
@@ -24,7 +25,7 @@ public class RocketLauncher : MonoBehaviour
 
     void Update()
     {
-        HandleInput();
+        LaunchRocket();
         UpdateGuideLine();
     }
 
@@ -41,7 +42,20 @@ public class RocketLauncher : MonoBehaviour
         guideLine.material = dashedLineMaterial;
         guideLine.textureMode = LineTextureMode.Tile;
     }
-
+    void LaunchRocket()
+    {
+        if (fuelSystem.currentFuel > 0) // Eğer yakıt varsa
+        {
+            HandleInput();
+            fuelSystem.UseFuel();
+            Debug.Log("Roket fırlatıldı!");
+            // Roket fırlatma kodları burada olacak
+        }
+        else
+        {
+            Debug.Log("Yakıt bitmiş, roket fırlatılamaz!");
+        }
+    }
     private void HandleInput()
     {
         if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began))

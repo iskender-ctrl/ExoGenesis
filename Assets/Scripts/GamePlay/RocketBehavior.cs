@@ -10,8 +10,9 @@ public class RocketBehavior : MonoBehaviour
     private Transform currentTarget;
     private float initialDistance;
     private Vector3 orbitDirection;
-    public TextMeshProUGUI speedText; // Hız göstergesi prefab'ı
+    private TextMeshProUGUI speedText; // Hız göstergesi prefab'ı
     [SerializeField] private GameObject explosionPrefab;
+   
 
     void Start()
     {
@@ -33,6 +34,8 @@ public class RocketBehavior : MonoBehaviour
         UpdateRotation();
         UpdateSpeedUI();
     }
+    
+
     private void UpdateSpeedUI()
     {
         if (speedText != null && rocketRigidbody != null)

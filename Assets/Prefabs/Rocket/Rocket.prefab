@@ -74,8 +74,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4280825843
-  m_fontColor: {r: 0.9529412, g: 0.21490756, b: 0.1568627, a: 1}
+    rgba: 4284216705
+  m_fontColor: {r: 0.5055645, g: 0.9622642, b: 0.35857958, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -393,7 +393,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spiralSpeed: 1
-  speedText: {fileID: 0}
   explosionPrefab: {fileID: 114660248727449581, guid: 6813c86c00b28fe4eb0c646e74fd1765, type: 3}
 --- !u!96 &-6076388249864427104
 TrailRenderer:

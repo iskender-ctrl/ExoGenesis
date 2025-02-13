@@ -30,7 +30,7 @@ MonoBehaviour:
     rotationSpeed: 40
     prefab: {fileID: 7583970762994690222, guid: 4caac3384383f1c4e8964df6bb3d2de5, type: 3}
     orbitAround: Sun
-    isTarget: 0
+    isTarget: 1
   - bodyName: Mercury
     mass: 90
     rotationSpeed: 30
