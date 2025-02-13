@@ -9,6 +9,7 @@ public class RocketBehavior : MonoBehaviour
     private Transform currentTarget;
     private float initialDistance;
     private Vector3 orbitDirection;
+    [SerializeField] private GameObject explosionPrefab;
 
     void Start()
     {
@@ -34,6 +35,7 @@ public class RocketBehavior : MonoBehaviour
                 EnterTargetField(other);
                 break;
             case "CelestialBody":
+                Instantiate(explosionPrefab, transform.position, Quaternion.identity);
                 DestroyRocket();
                 break;
         }
@@ -112,7 +114,7 @@ public class RocketBehavior : MonoBehaviour
         rocketRigidbody.linearVelocity = Vector3.Lerp(
             rocketRigidbody.linearVelocity,
             tangentDirection * orbitalSpeed,
-            Time.deltaTime 
+            Time.deltaTime
         );
     }
 
@@ -147,6 +149,8 @@ public class RocketBehavior : MonoBehaviour
         }
         else if (collision.gameObject.CompareTag("CelestialBody"))
         {
+
+
             DestroyRocket();
         }
     }
