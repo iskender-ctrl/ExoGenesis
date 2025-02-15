@@ -19,63 +19,74 @@ MonoBehaviour:
     prefab: {fileID: 2093142182791004879, guid: 3578765dd57e67a4588f294bfbb49026, type: 3}
     orbitAround: Sun
     isTarget: 0
+    population: 0
   - bodyName: Jupiter
     mass: 300
     rotationSpeed: 45
     prefab: {fileID: 3927900589588031047, guid: 0e9e9277d5f01e64182424e0ddc273e2, type: 3}
     orbitAround: Sun
     isTarget: 0
+    population: 0
   - bodyName: Mars
     mass: 180
     rotationSpeed: 40
     prefab: {fileID: 7583970762994690222, guid: 4caac3384383f1c4e8964df6bb3d2de5, type: 3}
     orbitAround: Sun
-    isTarget: 1
+    isTarget: 0
+    population: 0
   - bodyName: Mercury
     mass: 90
     rotationSpeed: 30
     prefab: {fileID: 6083831001397657460, guid: 6cf0f4ac81e503346971c8570d145688, type: 3}
     orbitAround: Sun
     isTarget: 0
+    population: 0
   - bodyName: Moon
     mass: 80
     rotationSpeed: 30
     prefab: {fileID: 7967521769389244823, guid: 1fbbcf578209d9e45a5dbd7e1924f856, type: 3}
     orbitAround: Sun
     isTarget: 0
+    population: 0
   - bodyName: Neptune
     mass: 180
     rotationSpeed: 20
     prefab: {fileID: 3652190373994053476, guid: 503e975d76c5a38479d441b28cd666bb, type: 3}
     orbitAround: Sun
-    isTarget: 1
+    isTarget: 0
+    population: 0
   - bodyName: Saturn
     mass: 200
     rotationSpeed: 50
     prefab: {fileID: 2446218441333529718, guid: ac99e2fff8e1029478a23d8dea73b7ae, type: 3}
     orbitAround: Sun
     isTarget: 0
+    population: 0
   - bodyName: Sun
     mass: 400
     rotationSpeed: 30
     prefab: {fileID: 2142827713212687938, guid: 2e3e0c2f79411774c93ae685e7f2d7cc, type: 3}
     orbitAround: 
     isTarget: 0
+    population: 0
   - bodyName: Uranus
     mass: 250
     rotationSpeed: 35
     prefab: {fileID: 6542825190304691582, guid: 41d77983e1f5a0047ade286594cf61b5, type: 3}
     orbitAround: Sun
     isTarget: 0
+    population: 0
   - bodyName: Venus
     mass: 120
     rotationSpeed: 45
     prefab: {fileID: 5005496601980399114, guid: e250cab38781c834cab2e9be4b012438, type: 3}
     orbitAround: Sun
     isTarget: 0
+    population: 0
   - bodyName: Planet1
     mass: 200
     rotationSpeed: 45
     prefab: {fileID: 2645011675575450261, guid: 873514dccb10c1949a5a173dbc4a9c72, type: 3}
     orbitAround: Sun
-    isTarget: 0
+    isTarget: 1
+    population: 50

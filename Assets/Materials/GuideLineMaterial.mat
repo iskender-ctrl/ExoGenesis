@@ -97,8 +97,8 @@ Material:
     - _ColorMode: 0
     - _Cull: 2
     - _Cutoff: 0.5
-    - _DashLength: 0.74
-    - _DashSpacing: 16
+    - _DashLength: 0.5
+    - _DashSpacing: 17.21
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DistortionBlend: 0.5
@@ -114,7 +114,7 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _LightingEnabled: 0
-    - _LineWidth: 3.75
+    - _LineWidth: 4.23
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -139,7 +139,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _ColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _LineColor: {r: 0, g: 31.749033, b: 3.5686462, a: 0.2627451}
+    - _LineColor: {r: 4.811405, g: 18.034264, b: 0.7656052, a: 0.2627451}
     - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _Transparent: {r: 0, g: 0, b: 0, a: 0}

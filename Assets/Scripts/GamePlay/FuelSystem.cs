@@ -3,30 +3,34 @@ using UnityEngine.UI;
 
 public class FuelSystem : MonoBehaviour
 {
-    [SerializeField] private Slider fuelBar; // UI'deki Slider bileşeni
-
-    private int maxFuel = 5; // Toplam 5 birim yakıt
-    public int currentFuel; // Mevcut yakıt seviyesi
+    [SerializeField] private Image fuelBar; // UI'deki doluluk göstergesi (Image)
+    
+    private int maxFuel = 1; // Maksimum 5 birim yakıt
+    private int currentFuel; // Mevcut yakıt miktarı
 
     void Start()
     {
-        currentFuel = maxFuel; // Başlangıçta full yakıt
-        fuelBar.maxValue = maxFuel; // Slider'ın max değeri
-        fuelBar.value = currentFuel; // Başlangıçta tam dolu göster
+        currentFuel = maxFuel * 5; // Başlangıçta full yakıt
+        UpdateFuelBar(); // İlk başta barı güncelle
     }
 
-    public bool UseFuel()
+    public void UseFuel()
     {
         if (currentFuel > 0)
         {
             currentFuel--; // Yakıtı azalt
-            fuelBar.value = currentFuel; // Progress barı güncelle
-            return true; // Roket fırlatılabilir
+            UpdateFuelBar(); // Progress barı güncelle
         }
-        else
-        {
-            Debug.Log("Yakıt tükendi! Roket fırlatılamaz.");
-            return false; // Yakıt bitmiş, fırlatma yapılmaz
-        }
+    }
+
+    private void UpdateFuelBar()
+    {
+        fuelBar.fillAmount = (float)currentFuel / 5; // Doğru float bölme işlemi
+        Debug.Log(fuelBar.fillAmount.ToString());
+    }
+
+    public bool HasFuel()
+    {
+        return currentFuel > 0; // Yakıt olup olmadığını kontrol eden fonksiyon
     }
 }
