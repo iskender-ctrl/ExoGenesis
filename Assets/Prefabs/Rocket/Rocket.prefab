@@ -394,6 +394,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spiralSpeed: 1
   explosionPrefab: {fileID: 114660248727449581, guid: 6813c86c00b28fe4eb0c646e74fd1765, type: 3}
+  speedText: {fileID: 3948196777759747773}
 --- !u!96 &-6076388249864427104
 TrailRenderer:
   serializedVersion: 3

@@ -305,7 +305,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9798eb75aec62a2438bf60268c1cad43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravitationalConstant: 0.0004
+  gravitationalConstant: 0.0006
   radiusMultiplier: 0.03
   orbitalSpeedMultiplier: 0
 --- !u!1 &330585543

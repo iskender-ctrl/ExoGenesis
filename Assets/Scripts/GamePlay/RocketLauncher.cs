@@ -32,12 +32,6 @@ public class RocketLauncher : MonoBehaviour
 
     private void InitializeGuideLine()
     {
-        if (guideLine == null)
-        {
-            Debug.LogError("Line Renderer bileşeni atanmamış!");
-            return;
-        }
-
         guideLine.positionCount = 2;
         guideLine.enabled = false;
         guideLine.material = dashedLineMaterial;
