@@ -6,6 +6,7 @@ TagManager:
   tags:
   - CelestialBody
   - GravityField
+  - MapPlanetPanel
   layers:
   - Default
   - TransparentFX
