@@ -8,6 +8,7 @@ public class PlayerData
 {
     public int coins = 100;
     public float fuel = 5.0f;
+    public int level = 1;
 }
 
 public static class PlayerDataManager
@@ -41,6 +42,13 @@ public static class PlayerDataManager
         string json = JsonUtility.ToJson(playerData);
         File.WriteAllText(savePath, json);
     }
+    public static void SetLevel(int newLevel)
+    {
+        playerData.level = newLevel;
+        SaveData();
+    }
+
+    public static int GetLevel() => playerData.level;
 
     public static void ResetToDefault()
     {
