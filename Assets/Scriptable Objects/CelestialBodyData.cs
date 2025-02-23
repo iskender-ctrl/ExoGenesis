@@ -13,6 +13,9 @@ public class CelestialBodyData : ScriptableObject
         public float rotationSpeed; // Gezegenin kendi etrafındaki dönüş hızı
         public GameObject prefab; // Gökcisminin prefabı
         public string orbitAround; // Gezegenin etrafında döneceği gökcismi adı
+        public bool isTarget;
+        public float maxPopulation;
     }
+
     public List<CelestialBody> celestialBodies = new List<CelestialBody>(); // Gök cisimlerinin listesi
 }

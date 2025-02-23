@@ -2,54 +2,109 @@ using UnityEngine;
 
 public class RocketLauncher : MonoBehaviour
 {
-    public GameObject rocketPrefab; // Fırlatılacak roket prefabı
-    public Transform spawnPoint;   // Roketin çıkış noktası
-    public float launchSpeed = 20f; // Roketin fırlatma hızı
-    public float rocketLifetime = 10f; // Roketin sahnede kalma süresi (saniye)
-    private bool isMouseHeld = false; // Mouse basılı tutuluyor mu?
+    [Header("Roket Ayarları")]
+    public GameObject rocketPrefab;
+    public Transform spawnPoint;
+    public float launchSpeed = 20f;
+    public float rocketLifetime = 10f;
+    [SerializeField] private FuelSystem fuelSystem; // Fuel sistemini Inspector'den atamak için
+
+
+    [Header("Çizgi Ayarları")]
+    public LineRenderer guideLine;
+    public Material dashedLineMaterial;
+    public float lineMaxLength = 50f;
+
+    private Camera mainCamera;
+    private bool isTouching = false;
+
+    void Start()
+    {
+        mainCamera = Camera.main;
+        InitializeGuideLine();
+    }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)) // Sol tuşa basıldığında
+        HandleInput();
+        UpdateGuideLine();
+    }
+
+    private void InitializeGuideLine()
+    {
+        guideLine.positionCount = 2;
+        guideLine.enabled = false;
+        guideLine.material = dashedLineMaterial;
+        guideLine.textureMode = LineTextureMode.Tile;
+    }
+
+    private void HandleInput()
+    {
+        if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began))
         {
-            isMouseHeld = true;
+            isTouching = true;
+            guideLine.enabled = true;
         }
 
-        if (Input.GetMouseButtonUp(0) && isMouseHeld) // Sol tuş bırakıldığında
+        if ((Input.GetMouseButtonUp(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Ended)) && isTouching)
         {
-            FireRocket(); // Roketi fırlat
-            isMouseHeld = false; // Mouse basılı değil
+            if (fuelSystem.HasFuel()) // Yakıt varsa
+            {
+                fuelSystem.UseFuel();
+                FireRocket();
+                isTouching = false; 
+                guideLine.enabled = false;
+            }
+            else
+            { 
+                Debug.Log("Yakıt tükendi! Fırlatma yapılamaz.");
+            }
         }
     }
 
-    void FireRocket()
+    private void UpdateGuideLine()
     {
-        // Mouse'un sahnedeki pozisyonunu hesapla
-        Vector3 targetPosition = GetMouseWorldPosition();
-        Vector3 direction = (targetPosition - spawnPoint.position).normalized;
+        if (!isTouching) return;
 
-        // Roketi spawn et ve doğru rotasyon ver
-        Quaternion rotation = Quaternion.LookRotation(direction);
-        GameObject rocket = Instantiate(rocketPrefab, spawnPoint.position, rotation);
+        Vector3 targetPos = GetTouchOrMousePosition();
+        Vector3 launchDirection = (targetPos - spawnPoint.position).normalized;
 
-        // Rigidbody bileşenini al ve hız uygula
-        Rigidbody rb = rocket.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.linearVelocity = direction * launchSpeed; // Rigidbody'ye hız uygula
-        }
-        // Roketi belli bir süre sonra yok et
-        Destroy(rocket, rocketLifetime);
+        guideLine.SetPosition(0, spawnPoint.position);
+        guideLine.SetPosition(1, spawnPoint.position + launchDirection * lineMaxLength);
     }
 
-    Vector3 GetMouseWorldPosition()
+    private Vector3 GetTouchOrMousePosition()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Plane xzPlane = new Plane(Vector3.up, Vector3.zero); // XZ düzlemi
-        if (xzPlane.Raycast(ray, out float distance))
+        if (Input.touchCount > 0)
+        {
+            return GetWorldPosition(Input.GetTouch(0).position);
+        }
+        return GetWorldPosition(Input.mousePosition);
+    }
+
+    private Vector3 GetWorldPosition(Vector2 screenPosition)
+    {
+        Ray ray = mainCamera.ScreenPointToRay(screenPosition);
+        Plane groundPlane = new Plane(Vector3.up, spawnPoint.position);
+        if (groundPlane.Raycast(ray, out float distance))
         {
             return ray.GetPoint(distance);
         }
-        return Vector3.zero;
+        return spawnPoint.position + spawnPoint.forward * 10f;
+    }
+
+    private void FireRocket()
+    {
+        Vector3 targetPos = GetTouchOrMousePosition();
+        Vector3 direction = (targetPos - spawnPoint.position).normalized;
+
+        GameObject rocket = Instantiate(rocketPrefab, spawnPoint.position, Quaternion.LookRotation(direction));
+        Rigidbody rb = rocket.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = direction * launchSpeed;
+        }
+
+        Destroy(rocket, rocketLifetime);
     }
 }

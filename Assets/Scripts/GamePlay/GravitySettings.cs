@@ -2,25 +2,25 @@ using UnityEngine;
 
 public class GravitySettings : MonoBehaviour
 {
-    [Header("Yerçekimi Ayarları")]
-    public float gravitationalConstant = 0.1f; // Yerçekimi sabiti
-    public float radiusMultiplier = 1f; // Görsel alan boyutu çarpanı
-    public float orbitalSpeedMultiplier =1f;
-    private static GravitySettings instance;
+    [Header("Gravity Settings")]
+    public float gravitationalConstant = 0.1f;
+    public float radiusMultiplier = 1f;
+    public float orbitalSpeedMultiplier = 1f;
 
-    void Awake()
+    // Singleton instance
+    public static GravitySettings Instance;
+
+    private void Awake()
     {
-        if (instance == null)
+        // Singleton yapı
+        if (Instance == null)
         {
-            instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
+            Instance = this;
         }
     }
 
-    public static float GravitationalConstant => instance.gravitationalConstant;
-    public static float RadiusMultiplier => instance.radiusMultiplier;
-    public static float OrbitalSpeedMultiplier => instance.orbitalSpeedMultiplier;
+    // Global erişim için sabitlere kolay erişim sağlayan property'ler
+    public static float GravitationalConstant => Instance.gravitationalConstant;
+    public static float RadiusMultiplier => Instance.radiusMultiplier;
+    public static float OrbitalSpeedMultiplier => Instance.orbitalSpeedMultiplier;
 }
