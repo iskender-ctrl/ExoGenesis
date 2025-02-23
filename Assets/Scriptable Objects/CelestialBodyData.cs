@@ -14,7 +14,7 @@ public class CelestialBodyData : ScriptableObject
         public GameObject prefab; // Gökcisminin prefabı
         public string orbitAround; // Gezegenin etrafında döneceği gökcismi adı
         public bool isTarget;
-        public float population;
+        public float maxPopulation;
     }
 
     public List<CelestialBody> celestialBodies = new List<CelestialBody>(); // Gök cisimlerinin listesi

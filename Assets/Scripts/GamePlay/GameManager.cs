@@ -7,7 +7,6 @@ public class GameManager : MonoBehaviour
     [Header("Global References")]
     public Transform spaceObjectsParent; // Gezegenlerin bağlı olduğu ana parent
     public CelestialBodyData celestialBodyData; // Gökcisimlerinin verilerini tutan ScriptableObject
-
     private GravityManager gravityManager; // GravityManager referansı
 
     private void Awake()
@@ -21,11 +20,9 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject); // Fazla instance'ı yok et
         }
-
         // GravityManager referansını alın
         gravityManager = GetComponent<GravityManager>();
     }
-
     private void Start()
     {
         // Tüm sistemi başlat

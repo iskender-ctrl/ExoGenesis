@@ -5,6 +5,12 @@ public class RocketCollisionHandler
     private Rigidbody rocketRigidbody;
     private RocketBehavior rocketBehavior;
     private RocketMovement rocketMovement;
+    private PopulationManager populationManager;
+    public float populationIncreaseAmount = 10f;
+    public RocketCollisionHandler(PopulationManager populationManager)
+    {
+        this.populationManager = populationManager;
+    }
 
     public RocketCollisionHandler(RocketBehavior rocketBehavior, RocketMovement rocketMovement)
     {
@@ -17,8 +23,14 @@ public class RocketCollisionHandler
     {
         switch (other.tag)
         {
-            case "TargetField":
-                //
+            case "Target":
+                var populationManager = other.gameObject.GetComponent<PopulationManager>();
+                if (populationManager != null)
+                {
+                    // Popülasyonu artır
+                    populationManager.IncreasePopulation(10);
+                    DestroyRocket();
+                }
                 break;
             case "CelestialBody":
                 rocketBehavior.InstantiateExplosion(rocketRigidbody.position); // Patlama efekti
@@ -44,16 +56,16 @@ public class RocketCollisionHandler
     }
 
     public void HandleCollisionEnter(Collision collision)
-{
-    if (collision.gameObject.CompareTag("Target"))
     {
-        //
+        if (collision.gameObject.CompareTag("Target"))
+        {
+            //
+        }
+        else if (collision.gameObject.CompareTag("CelestialBody"))
+        {
+            DestroyRocket();
+        }
     }
-    else if (collision.gameObject.CompareTag("CelestialBody"))
-    {
-        DestroyRocket();
-    }
-}
 
     private void DestroyRocket()
     {
