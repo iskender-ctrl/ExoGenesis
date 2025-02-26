@@ -10,18 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5124784aba59bcf48a08fb135f6b3838, type: 3}
-  m_Name: ClickablePlanets
+  m_Name: TargetPlanets
   m_EditorClassIdentifier: 
   planets:
   - planetName: Mars
     bG: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+    defaultPopulation: 0
+    currentPopulation: 30
     items:
     - decorationName: Water
-      icon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-      cost: 20
+      icon: {fileID: 21300000, guid: 898f886a39d714db5b90d2c36676c894, type: 3}
+      requiredPopulation: 30
     - decorationName: Tree
-      icon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-      cost: 30
+      icon: {fileID: 21300000, guid: 898f886a39d714db5b90d2c36676c894, type: 3}
+      requiredPopulation: 40
   - planetName: Earth
     bG: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
+    defaultPopulation: 0
+    currentPopulation: 0
     items: []

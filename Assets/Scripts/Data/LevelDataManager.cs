@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
 [System.Serializable]
-public class PlanetData
+public class PlanetDataLevel
 {
     public string name;
     public string type;
@@ -13,7 +13,7 @@ public class PlanetData
 public class LevelData
 {
     public int level;
-    public List<PlanetData> planets;
+    public List<PlanetDataLevel> planets;
     public string targetPlanet;
 }
 

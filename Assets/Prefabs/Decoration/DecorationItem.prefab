@@ -134,7 +134,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1b33a154f425db4794d94516c379995, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  planetName: 
+  childName: 
   button: {fileID: 0}
 --- !u!1 &3877261437769101040
 GameObject:
@@ -450,7 +450,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 100 Coin
+  m_text: "Nuf\xFCs"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

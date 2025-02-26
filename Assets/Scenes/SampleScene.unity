@@ -566,6 +566,53 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 1
+--- !u!1 &429041919
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 429041921}
+  - component: {fileID: 429041920}
+  m_Layer: 0
+  m_Name: LevelManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &429041920
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 429041919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a032de889e39da48968e60745d9b74d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  planetPrefabs:
+  - {fileID: 6657310615676535153, guid: be414da4e24e5b447b771a0dd0bc87b6, type: 3}
+  planetDatabase: {fileID: 11400000, guid: 161bb7313d0f5d846a0832e4b8ea3ab6, type: 2}
+--- !u!4 &429041921
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 429041919}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.2047853, y: 0.550682, z: 1.5966812}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &510461245
 GameObject:
   m_ObjectHideFlags: 0
@@ -1662,8 +1709,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 099cf9f5769c650409cea15a0d0502bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxPopulation: 50
-  currentPopulation: 0
   populationText: {fileID: 1179717254}
 --- !u!4 &2107340889 stripped
 Transform:
@@ -1741,3 +1786,4 @@ SceneRoots:
   - {fileID: 130000203}
   - {fileID: 725808571}
   - {fileID: 575492519}
+  - {fileID: 429041921}

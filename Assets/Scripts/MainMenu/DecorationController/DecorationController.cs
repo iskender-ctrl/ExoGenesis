@@ -21,7 +21,7 @@ public class DecorationController : MonoBehaviour
     public Transform planetTargetParent;
     private SaveData saveData = new SaveData();
     private string saveFilePath;
-    public TextMeshProUGUI warningText;
+    public TextMeshProUGUI warningText, populationText;
     [System.Serializable]
     public class PlanetPrefabMapping
     {
@@ -36,7 +36,6 @@ public class DecorationController : MonoBehaviour
         SetPlanetData(MapDecorationController.Instance.planetDatabase.planets.Find(p => p.planetName == MapDecorationController.Instance.planetName));
         LoadData();
     }
-
     public void SetPlanetData(ClickablePlanetDatabase.PlanetData planetData)
     {
         if (planetNameText != null)
@@ -46,6 +45,9 @@ public class DecorationController : MonoBehaviour
         {
             backgroundImage.sprite = planetData.bG;
         }
+
+        // 🌟 Nüfus metnini güncelle
+        UpdatePopulationText(planetData.currentPopulation);
 
         ClearSpawnedItems();
         SpawnItems(planetData.items);
@@ -63,9 +65,13 @@ public class DecorationController : MonoBehaviour
             spawnedItems.Add(planetObject);
         }
     }
-
     private void SpawnItems(List<ClickablePlanetDatabase.DecorationItem> items)
     {
+        // 🌟 Gezegenin mevcut nüfusunu al
+        var planetData = MapDecorationController.Instance.planetDatabase.planets
+            .Find(p => p.planetName == MapDecorationController.Instance.planetName);
+        int currentPopulation = planetData != null ? planetData.currentPopulation : 0;
+
         foreach (var item in items)
         {
             // 🌟 Silinen öğe daha önce kaydedilmiş mi?
@@ -80,16 +86,45 @@ public class DecorationController : MonoBehaviour
                 GameObject newItem = Instantiate(itemPrefab, itemSpawnPoint.position, Quaternion.identity, itemSpawnPoint);
                 newItem.name = item.decorationName;
 
+                // 🌟 Item bileşenlerini bul
                 Image itemIcon = newItem.transform.Find("Icon")?.GetComponent<Image>();
                 TextMeshProUGUI itemNameText = newItem.transform.Find("Name")?.GetComponent<TextMeshProUGUI>();
+                Button itemButton = newItem.GetComponent<Button>();
 
+                // 🌟 Butonun child'ı olan TextMeshProUGUI bileşenini bul
+
+                // 🌟 Item bilgilerini ayarla
                 if (itemIcon != null) itemIcon.sprite = item.icon;
                 if (itemNameText != null) itemNameText.text = item.decorationName;
 
+
+
+                // 🌟 Nüfus yeterli mi?
+                if (currentPopulation < item.requiredPopulation)
+                {
+                    // 🌟 Nüfus yetersizse, itemi grileştir veya pasif yap
+                    if (itemIcon != null) itemIcon.color = Color.gray;
+                    if (itemButton != null) itemButton.interactable = false;
+                }
+                else
+                {
+                    // 🌟 Nüfus yeterliyse, itemi aktif yap
+                    if (itemIcon != null) itemIcon.color = Color.white;
+                    if (itemButton != null) itemButton.interactable = true;
+                }
+
+                // 🌟 Butona tıklama özelliği ekle
                 PlanetButton relatedButton = newItem.GetComponentInChildren<PlanetButton>();
                 if (relatedButton != null)
                 {
                     relatedButton.childName = item.decorationName;
+                }
+                TextMeshProUGUI requiredPopulationText = relatedButton.transform.GetChild(0).transform.GetComponent<TextMeshProUGUI>();
+
+                // 🌟 Required population değerini butonun child'ına yazdır
+                if (requiredPopulationText != null)
+                {
+                    requiredPopulationText.text = "Nüfus: " + item.requiredPopulation.ToString();
                 }
 
                 spawnedItems.Add(newItem);
@@ -97,6 +132,13 @@ public class DecorationController : MonoBehaviour
         }
     }
 
+    private void UpdatePopulationText(int currentPopulation)
+    {
+        if (populationText != null)
+        {
+            populationText.text = "Population: " + currentPopulation.ToString();
+        }
+    }
 
     private void ClearSpawnedItems()
     {
@@ -117,10 +159,17 @@ public class DecorationController : MonoBehaviour
         Debug.Log("Aktif edilecek child obje: " + childName);
         decorationPopUp.SetActive(false);
 
-        // 🌟 İlgili PlanetData ve DecorationItem'ı bul
+        // 🌟 İlgili gezegenin verisini bul
         var planetData = MapDecorationController.Instance.planetDatabase.planets
             .Find(p => p.planetName == MapDecorationController.Instance.planetName);
 
+        if (planetData == null)
+        {
+            Debug.LogWarning("Gezegen verisi bulunamadı.");
+            return;
+        }
+
+        // 🌟 Dekorasyon öğesini bul
         var itemData = planetData.items.Find(item => item.decorationName == childName);
 
         if (itemData == null)
@@ -129,18 +178,14 @@ public class DecorationController : MonoBehaviour
             return;
         }
 
-        int playerCoins = PlayerDataManager.GetCoins();
-
-        // 🌟 Coin kontrolü
-        if (playerCoins < itemData.cost)
+        // 🌟 Nüfus kontrolü
+        if (planetData.currentPopulation < itemData.requiredPopulation)
         {
-            ShowWarning("Yetersiz coin! Gerekli: " + itemData.cost);
+            ShowWarning($"Bu dekorasyonu almak için en az {itemData.requiredPopulation} nüfusa ihtiyacınız var!");
             return;
         }
 
-        // 🌟 Coin düş ve kaydet
-        PlayerDataManager.SpendCoins(itemData.cost);
-        Debug.Log(itemData.cost + " coin harcandı. Kalan coin: " + PlayerDataManager.GetCoins());
+        Debug.Log($"Dekorasyon açıldı: {childName} (Gereken nüfus: {itemData.requiredPopulation}, Mevcut nüfus: {planetData.currentPopulation})");
 
         // 🌟 Child objeyi aktif et
         foreach (Transform planet in planetTargetParent)
@@ -158,12 +203,16 @@ public class DecorationController : MonoBehaviour
                 }
 
                 RemoveItemFromList(childName);
+
+                // 🌟 Nüfus metnini güncelle
+                UpdatePopulationText(planetData.currentPopulation);
                 return;
             }
         }
 
         Debug.LogWarning("Child obje bulunamadı: " + childName);
     }
+
     private void ShowWarning(string message)
     {
         warningText.text = message;
@@ -213,6 +262,14 @@ public class DecorationController : MonoBehaviour
                     Destroy(itemToRemove);
                     Debug.Log(removedItem + " daha önce silinmişti, tekrar listelenmedi.");
                 }
+            }
+
+            // 🌟 Nüfus metnini güncelle
+            var planetData = MapDecorationController.Instance.planetDatabase.planets
+                .Find(p => p.planetName == MapDecorationController.Instance.planetName);
+            if (planetData != null)
+            {
+                UpdatePopulationText(planetData.currentPopulation);
             }
         }
     }
