@@ -112,8 +112,6 @@ public class LevelManager : MonoBehaviour
                 IncreasePlanetPopulation(targetPlanetData.planetName, 50);
             }
         }
-
-        RestartScene();
     }
 
     void RestartScene()
