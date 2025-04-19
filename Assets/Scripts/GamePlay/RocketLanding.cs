@@ -118,7 +118,7 @@ public class RocketLanding : MonoBehaviour
         {
             normalVelocity += -normalVector/2 * Time.deltaTime;
         }
-        Debug.Log(angle);
+       
         // --- 12. Hızı güncelle
         rocketRigidbody.linearVelocity = normalVelocity + tangentVelocity;
     }

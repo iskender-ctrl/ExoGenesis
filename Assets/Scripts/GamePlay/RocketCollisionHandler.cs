@@ -9,10 +9,7 @@ public class RocketCollisionHandler
 
     public float populationIncreaseAmount = 10f;
 
-    public RocketCollisionHandler(PopulationManager populationManager)
-    {
-        this.populationManager = populationManager;
-    }
+
 
     public RocketCollisionHandler(RocketBehavior rocketBehavior, RocketMovement rocketMovement)
     {
@@ -22,19 +19,14 @@ public class RocketCollisionHandler
         this.rocketLanding = rocketBehavior.GetComponent<RocketLanding>();
     }
 
-    private PopulationManager populationManager;
+
 
     public void HandleTriggerEnter(Collider other)
     {
         switch (other.tag)
         {
             case "Target":
-                var populationManager = other.gameObject.GetComponent<PopulationManager>();
-                if (populationManager != null)
-                {
-                    // Popülasyonu artır
-                    populationManager.IncreasePopulation(populationIncreaseAmount);
-                }
+
                 break;
 
             case "TargetField":
@@ -44,6 +36,7 @@ public class RocketCollisionHandler
                     float planetRadius = planetTransform.localScale.x * 0.5f;
                     float gravityFieldRadius = other.GetComponent<SphereCollider>().radius * planetTransform.localScale.x;
                     rocketLanding.InitializeLanding(planetRadius, gravityFieldRadius, planetTransform);
+                    LevelManager.Instance.LevelCompleted();
                 }
                 break;
 
