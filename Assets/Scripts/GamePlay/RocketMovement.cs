@@ -3,7 +3,6 @@ using UnityEngine;
 public class RocketMovement
 {
     private Rigidbody rocketRigidbody;
-
     public RocketMovement(Rigidbody rocketRigidbody)
     {
         this.rocketRigidbody = rocketRigidbody;
@@ -15,5 +14,6 @@ public class RocketMovement
         float forceMagnitude = (GravitySettings.GravitationalConstant * body.mass) / (distance * distance);
 
         rocketRigidbody.AddForce(direction * forceMagnitude * intensityMultiplier);
+        
     }
 }

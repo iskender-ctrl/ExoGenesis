@@ -9,7 +9,7 @@ public class FuelSystem : MonoBehaviour
     private int currentFuel;
     void Start()
     {
-        currentFuel = maxFuel * 5;
+        currentFuel = maxFuel * 50;
         UpdateFuelBar();
     }
 
@@ -24,7 +24,7 @@ public class FuelSystem : MonoBehaviour
 
     private void UpdateFuelBar()
     {
-        fuelBar.fillAmount = (float)currentFuel / 5;
+        fuelBar.fillAmount = (float)currentFuel / 50;
     }
 
     public bool HasFuel()
