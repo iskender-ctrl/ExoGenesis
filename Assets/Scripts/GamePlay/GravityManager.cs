@@ -34,14 +34,10 @@ public class GravityManager : MonoBehaviour
         gravityCollider.radius = Mathf.Sqrt(bodyData.mass) * GravitySettings.RadiusMultiplier;
 
         // GravityField objesini etiketle
-        if (bodyData.isTarget)
-        {
+        if (planet.CompareTag("Target"))
             gravityField.tag = "TargetField";
-        }
         else
-        {
             gravityField.tag = "GravityField";
-        }
 
         // Küre görseli oluştur
         GameObject sphereVisual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -58,7 +54,7 @@ public class GravityManager : MonoBehaviour
         float intensity1 = 0.3f;
         float intensity2 = 0.1f;
         // GravityColor veya Color değerini ayarla
-        if (bodyData.isTarget)
+        if (planet.CompareTag("Target"))
         {
 
             // TargetField için renkler

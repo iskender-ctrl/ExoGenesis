@@ -25,7 +25,7 @@ MonoBehaviour:
     rotationSpeed: 45
     prefab: {fileID: 6286559184371221999, guid: a3ad225dce59b9f4a97a1190303c52fa, type: 3}
     orbitAround: 
-    isTarget: 1
+    isTarget: 0
     maxPopulation: 50
   - bodyName: planet3
     mass: 180
@@ -35,7 +35,7 @@ MonoBehaviour:
     isTarget: 0
     maxPopulation: 0
   - bodyName: planet4
-    mass: 90
+    mass: 400
     rotationSpeed: 30
     prefab: {fileID: 3924348028112551145, guid: 57d4e7f9f570639448af10e4a68f25ed, type: 3}
     orbitAround: 

@@ -5,34 +5,6 @@ public class CelestialBodyManager : MonoBehaviour
 {
     private List<GameObject> celestialObjects = new List<GameObject>();
     private Dictionary<string, GameObject> celestialObjectMap = new Dictionary<string, GameObject>();
-    void Start()
-    {
-        // Sahnedeki gökcisimlerini organize et
-        InitializeCelestialBodies();
-    }
-
-    private void InitializeCelestialBodies()
-    {
-        // GameManager üzerinden spaceObjectsParent'i alın
-        foreach (Transform child in GameManager.Instance.spaceObjectsParent)
-        {
-            var bodyData = CelestialBodyHelper.FindBodyByName(child.name);
-            if (bodyData != null)
-            {
-                celestialObjects.Add(child.gameObject);
-                celestialObjectMap[child.name] = child.gameObject;
-
-                if (bodyData.isTarget)
-                {
-                    child.tag = "Target";
-                }
-                else
-                {
-                    child.tag = "CelestialBody";
-                }
-            }
-        }
-    }
 
     void FixedUpdate()
     {

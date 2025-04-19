@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: TargetPlanets
   m_EditorClassIdentifier: 
   planets:
-  - planetName: Mars
+  - planetName: planet2
     bG: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
     defaultPopulation: 0
-    currentPopulation: 30
+    currentPopulation: 0
     items:
     - decorationName: Water
       icon: {fileID: 21300000, guid: 898f886a39d714db5b90d2c36676c894, type: 3}
@@ -24,7 +24,7 @@ MonoBehaviour:
     - decorationName: Tree
       icon: {fileID: 21300000, guid: 898f886a39d714db5b90d2c36676c894, type: 3}
       requiredPopulation: 40
-  - planetName: Earth
+  - planetName: planet5
     bG: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
     defaultPopulation: 0
     currentPopulation: 0
