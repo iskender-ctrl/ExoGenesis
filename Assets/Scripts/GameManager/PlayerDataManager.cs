@@ -91,7 +91,15 @@ public static class PlayerDataManager
             SaveData();
         }
     }
-
+    public static void RemoveCoins(int amount)
+    {
+        if (playerData.coins >= amount)
+        {
+            playerData.coins -= amount;
+            OnCoinsChanged?.Invoke(playerData.coins);
+            SaveData();
+        }
+    }
     public static int GetCoins() => playerData.coins;
     public static float GetFuel() => playerData.fuel;
 }

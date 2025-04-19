@@ -131,6 +131,33 @@ public class DecorationController : MonoBehaviour
             }
         }
     }
+    private void CheckPlanetCollectionComplete(string planetName)
+    {
+        var planetData = MapDecorationController.Instance.planetDatabase.planets
+            .Find(p => p.planetName == planetName);
+
+        if (planetData == null) return;
+
+        // 🔍 Tüm item'ler aktif mi?
+        bool allDecorationsActive = true;
+        foreach (var item in planetData.items)
+        {
+            if (!saveData.activeObjects.Contains(item.decorationName))
+            {
+                allDecorationsActive = false;
+                break;
+            }
+        }
+
+        if (allDecorationsActive)
+        {
+            if (!InventoryManager.Instance.GetCollectionItems().Contains(planetName))
+            {
+                InventoryManager.Instance.AddCollectionItem(planetName);
+                Debug.Log("🌟 Koleksiyon tamamlandı ve eklendi: " + planetName);
+            }
+        }
+    }
 
     private void UpdatePopulationText(int currentPopulation)
     {
@@ -206,11 +233,10 @@ public class DecorationController : MonoBehaviour
 
                 // 🌟 Nüfus metnini güncelle
                 UpdatePopulationText(planetData.currentPopulation);
+                CheckPlanetCollectionComplete(planetData.planetName);
                 return;
             }
         }
-
-        Debug.LogWarning("Child obje bulunamadı: " + childName);
     }
 
     private void ShowWarning(string message)

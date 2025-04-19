@@ -70,7 +70,7 @@ public class IAPManager : MonoBehaviour, IStoreListener
     // **GÜNCELLENEN METOT** (2 parametre alıyor artık)
     public void OnInitializeFailed(InitializationFailureReason error, string message)
     {
-        Debug.LogError($"IAP Başlatılamadı: {error} - {message}");
+//        Debug.LogError($"IAP Başlatılamadı: {error} - {message}");
     }
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
