@@ -5,12 +5,16 @@ using System.IO;
 
 public class LevelManager : MonoBehaviour
 {
+    public static LevelManager Instance { get; set; }
     public CelestialBodyData celestialBodyData; // Artık prefablar buradan alınacak
     private LevelDatabase levelDatabase;
     public ClickablePlanetDatabase planetDatabase;
     private string saveFilePath;
     public Transform spawnParent;
-
+    private void Awake()
+    {
+        Instance = this;
+    }
     void Start()
     {
         saveFilePath = Application.persistentDataPath + "/saveData.json";
@@ -52,50 +56,50 @@ public class LevelManager : MonoBehaviour
         if (jsonFile != null)
         {
             levelDatabase = JsonUtility.FromJson<LevelDatabase>(jsonFile.text);
-            
+
         }
     }
 
     void LoadLevel(int level)
-{
-    LevelData levelData = levelDatabase.levels.Find(l => l.level == level);
-
-    if (levelData != null)
     {
-        foreach (PlanetDataLevel planet in levelData.planets)
+        LevelData levelData = levelDatabase.levels.Find(l => l.level == level);
+
+        if (levelData != null)
         {
-            GameObject prefab = FindPlanetPrefab(planet.name);
-            if (prefab != null)
+            foreach (PlanetDataLevel planet in levelData.planets)
             {
-                Vector3 position = new Vector3(planet.position[0], planet.position[1], planet.position[2]);
-                GameObject newPlanet = Instantiate(prefab, position, Quaternion.identity, spawnParent);
-                newPlanet.name = prefab.name;
-                newPlanet.transform.localScale = Vector3.one * planet.scale;
-
-                // 🌟 TAG ATAMA
-                if (planet.name == levelData.targetPlanet)
-                    newPlanet.tag = "Target";
-                else
-                    newPlanet.tag = "CelestialBody";
-
-                // Nüfus yüklemesi
-                ClickablePlanetDatabase.PlanetData planetData = planetDatabase.planets.Find(p => p.planetName == planet.name);
-                if (planetData != null)
+                GameObject prefab = FindPlanetPrefab(planet.name);
+                if (prefab != null)
                 {
-                    int savedPopulation = LoadPlanetPopulation(planetData.planetName, planetData.defaultPopulation);
-                    planetData.currentPopulation = savedPopulation;
-                    Debug.Log($"🔵 {planetData.planetName} için yüklenen nüfus: {planetData.currentPopulation}");
-                }
+                    Vector3 position = new Vector3(planet.position[0], planet.position[1], planet.position[2]);
+                    GameObject newPlanet = Instantiate(prefab, position, Quaternion.identity, spawnParent);
+                    newPlanet.name = prefab.name;
+                    newPlanet.transform.localScale = Vector3.one * planet.scale;
 
-                // Hedef gezegen rengi
-                if (planet.name == levelData.targetPlanet)
-                {
-                    newPlanet.GetComponent<Renderer>().material.color = Color.green;
+                    // 🌟 TAG ATAMA
+                    if (planet.name == levelData.targetPlanet)
+                        newPlanet.tag = "Target";
+                    else
+                        newPlanet.tag = "CelestialBody";
+
+                    // Nüfus yüklemesi
+                    ClickablePlanetDatabase.PlanetData planetData = planetDatabase.planets.Find(p => p.planetName == planet.name);
+                    if (planetData != null)
+                    {
+                        int savedPopulation = LoadPlanetPopulation(planetData.planetName, planetData.defaultPopulation);
+                        planetData.currentPopulation = savedPopulation;
+                        Debug.Log($"🔵 {planetData.planetName} için yüklenen nüfus: {planetData.currentPopulation}");
+                    }
+
+                    // Hedef gezegen rengi
+                    if (planet.name == levelData.targetPlanet)
+                    {
+                        newPlanet.GetComponent<Renderer>().material.color = Color.green;
+                    }
                 }
             }
         }
     }
-}
 
 
     GameObject FindPlanetPrefab(string name)
@@ -123,6 +127,7 @@ public class LevelManager : MonoBehaviour
             if (targetPlanetData != null)
             {
                 IncreasePlanetPopulation(targetPlanetData.planetName, 50);
+                Debug.Log("50 geldi");
             }
         }
     }
