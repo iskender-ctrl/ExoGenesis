@@ -3,7 +3,6 @@ using UnityEngine;
 public class GravityManager : MonoBehaviour
 {
     public Material gravityFieldMaterial; // GravityField için materyal
-
     public void InitializeGravitySystem()
     {
         // Tüm gökcisimlerini işle
@@ -99,7 +98,7 @@ public class GravityManager : MonoBehaviour
             meshCollider.isTrigger = false;                 // Çarpışmalar için tetikleyici kapalı
             meshCollider.convex = false;                    // Konveks değil
 
-
         }
     }
+
 }

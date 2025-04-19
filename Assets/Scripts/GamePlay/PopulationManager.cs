@@ -41,7 +41,7 @@ public class PopulationManager : MonoBehaviour
         // Level tamamlandı mı kontrol et
         if (currentPopulation >= maxPopulation)
         {
-            Debug.Log($"{gameObject.name} için Level Tamamlandı!");
+            //Debug.Log($"{gameObject.name} için Level Tamamlandı!");
         }
     }
 
@@ -51,7 +51,7 @@ public class PopulationManager : MonoBehaviour
         if (populationText != null)
         {
             // Popülasyon değerini UI'da güncelle
-            populationText.text = $"{currentPopulation}/{maxPopulation}";
+            
         }
     }
 }

@@ -5,8 +5,10 @@ public class RocketCollisionHandler
     private Rigidbody rocketRigidbody;
     private RocketBehavior rocketBehavior;
     private RocketMovement rocketMovement;
-    private PopulationManager populationManager;
+    private RocketLanding rocketLanding;
+
     public float populationIncreaseAmount = 10f;
+
     public RocketCollisionHandler(PopulationManager populationManager)
     {
         this.populationManager = populationManager;
@@ -17,7 +19,10 @@ public class RocketCollisionHandler
         this.rocketBehavior = rocketBehavior;
         this.rocketRigidbody = rocketBehavior.GetComponent<Rigidbody>();
         this.rocketMovement = rocketMovement;
+        this.rocketLanding = rocketBehavior.GetComponent<RocketLanding>();
     }
+
+    private PopulationManager populationManager;
 
     public void HandleTriggerEnter(Collider other)
     {
@@ -28,12 +33,22 @@ public class RocketCollisionHandler
                 if (populationManager != null)
                 {
                     // Popülasyonu artır
-                    populationManager.IncreasePopulation(10);
-                    DestroyRocket();
+                    populationManager.IncreasePopulation(populationIncreaseAmount);
                 }
                 break;
+
+            case "TargetField":
+                var planetTransform = other.transform.parent;
+                if (rocketLanding != null)
+                {
+                    float planetRadius = planetTransform.localScale.x * 0.5f;
+                    float gravityFieldRadius = other.GetComponent<SphereCollider>().radius * planetTransform.localScale.x;
+                    rocketLanding.InitializeLanding(planetRadius, gravityFieldRadius, planetTransform);
+                }
+                break;
+
             case "CelestialBody":
-                rocketBehavior.InstantiateExplosion(rocketRigidbody.position); // Patlama efekti
+                rocketBehavior.InstantiateExplosion(rocketRigidbody.position);
                 DestroyRocket();
                 break;
         }
@@ -49,17 +64,17 @@ public class RocketCollisionHandler
                 rocketMovement.ApplyPlanetGravity(body, other.transform.position);
             }
         }
-        else if (other.CompareTag("TargetField"))
-        {
-            // Hedef alanı işlemleri
-        }
     }
 
     public void HandleCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Target"))
         {
-            //
+            // Roket fiziksel olarak hedefe çarptıysa da inişi durdur
+            if (rocketLanding != null)
+            {
+                rocketLanding.StopLanding();
+            }
         }
         else if (collision.gameObject.CompareTag("CelestialBody"))
         {
