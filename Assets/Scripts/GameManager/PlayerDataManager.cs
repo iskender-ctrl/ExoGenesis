@@ -52,11 +52,33 @@ public static class PlayerDataManager
 
     public static void ResetToDefault()
     {
+        // 1. Oyuncu verilerini sıfırla
         playerData = new PlayerData();
         SaveData();
         OnCoinsChanged?.Invoke(playerData.coins);
         OnFuelChanged?.Invoke(playerData.fuel);
+
+        // 2. Gezegen populasyonlarını sıfırla
+        string planetSavePath = Application.persistentDataPath + "/saveData.json";
+
+        if (File.Exists(planetSavePath))
+        {
+            string json = File.ReadAllText(planetSavePath);
+            SaveData saveData = JsonUtility.FromJson<SaveData>(json);
+
+            saveData.planetPopulations.Clear(); // Tüm gezegen populasyon verilerini temizle
+
+            string newJson = JsonUtility.ToJson(saveData, true);
+            File.WriteAllText(planetSavePath, newJson);
+
+            Debug.Log("🌍 Tüm gezegen popülasyon verileri sıfırlandı.");
+        }
+        else
+        {
+            Debug.Log("ℹ️ Gezegen verisi zaten yoktu (saveData.json bulunamadı).");
+        }
     }
+
 
     public static void AddCoins(int amount)
     {

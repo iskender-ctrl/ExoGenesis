@@ -117,21 +117,38 @@ public class LevelManager : MonoBehaviour
 
     public void LevelCompleted()
     {
-        int nextLevel = PlayerDataManager.GetLevel() + 1;
-        PlayerDataManager.SetLevel(nextLevel);
+        int currentLevel = PlayerDataManager.GetLevel();
+        Debug.Log($"🎯 Tamamlanan level: {currentLevel}");
 
-        LevelData levelData = levelDatabase.levels.Find(l => l.level == PlayerDataManager.GetLevel());
-        if (levelData != null)
+        LevelData currentLevelData = levelDatabase.levels.Find(l => l.level == currentLevel);
+        if (currentLevelData != null)
         {
-            ClickablePlanetDatabase.PlanetData targetPlanetData = planetDatabase.planets.Find(p => p.planetName == levelData.targetPlanet);
+            string targetPlanetName = currentLevelData.targetPlanet;
+
+            ClickablePlanetDatabase.PlanetData targetPlanetData = planetDatabase.planets.Find(p => p.planetName == targetPlanetName);
             if (targetPlanetData != null)
             {
-                IncreasePlanetPopulation(targetPlanetData.planetName, 50);
-                Debug.Log("50 geldi");
+                IncreasePlanetPopulation(targetPlanetName, 50);
+                Debug.Log($"🌍 {targetPlanetName} gezegeninin nüfusu +50 yapıldı.");
+            }
+            else
+            {
+                Debug.LogWarning($"🎯 {targetPlanetName} veritabanında bulunamadı!");
             }
         }
-    }
+        else
+        {
+            Debug.LogWarning($"⚠️ Level {currentLevel} verisi bulunamadı.");
+        }
 
+        // 🔁 Şimdi level'i artır (artık bitirdik çünkü)
+        int nextLevel = currentLevel + 1;
+        PlayerDataManager.SetLevel(nextLevel);
+        Debug.Log($"✅ Yeni level: {nextLevel}");
+
+        // Ana menü sahnesine dön
+        SceneManager.LoadScene("MainMenu");
+    }
     void RestartScene()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);

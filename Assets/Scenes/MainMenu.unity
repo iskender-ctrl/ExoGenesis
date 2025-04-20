@@ -14306,7 +14306,7 @@ GameObject:
   - component: {fileID: 1876649822}
   - component: {fileID: 1876649821}
   m_Layer: 0
-  m_Name: Mars
+  m_Name: planet2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15500,7 +15500,7 @@ GameObject:
   - component: {fileID: 2047939273}
   - component: {fileID: 2047939272}
   m_Layer: 0
-  m_Name: Earth
+  m_Name: planet5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
