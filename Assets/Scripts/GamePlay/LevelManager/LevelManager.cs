@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour
 {
@@ -11,12 +12,20 @@ public class LevelManager : MonoBehaviour
     public ClickablePlanetDatabase planetDatabase;
     private string saveFilePath;
     public Transform spawnParent;
+    [Header("UI")]
+    [SerializeField] private GameObject successPanel;
+    [SerializeField] private Button continueButton;
+    [SerializeField] private Button mainMenuButton;
+
     private void Awake()
     {
         Instance = this;
     }
     void Start()
     {
+        if (successPanel != null)
+            successPanel.SetActive(false);
+
         saveFilePath = Application.persistentDataPath + "/saveData.json";
         LoadLevelData();
         int currentLevel = PlayerDataManager.GetLevel();
@@ -31,17 +40,47 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    void Update()
+
+    public void OnSuccessfulShot()
     {
-        if (Input.GetKeyDown(KeyCode.T))
+        string targetPlanetName = GetCurrentPlanetName();
+        if (!string.IsNullOrEmpty(targetPlanetName))
         {
-            string currentPlanetName = GetCurrentPlanetName();
-            if (!string.IsNullOrEmpty(currentPlanetName))
+            IncreasePlanetPopulation(targetPlanetName, 10);
+            Debug.Log($"🎯 Başarılı atış! {targetPlanetName} +10 nüfus");
+
+            int currentPopulation = LoadPlanetPopulation(targetPlanetName, 0);
+            int currentLevel = PlayerDataManager.GetLevel();
+            LevelData currentLevelData = levelDatabase.levels.Find(l => l.level == currentLevel);
+
+            if (currentLevelData != null)
             {
-                IncreasePlanetPopulation(currentPlanetName, 10);
+                bool reachedTarget = currentPopulation >= currentLevelData.targetPopulation;
+                ShowSuccessPanel(reachedTarget);
             }
         }
     }
+
+
+
+    private void ShowSuccessPanel(bool reachedTarget)
+    {
+        successPanel.SetActive(true);
+        continueButton.onClick.RemoveAllListeners();
+        mainMenuButton.onClick.RemoveAllListeners();
+
+        if (reachedTarget)
+        {
+            continueButton.onClick.AddListener(LoadNextLevel);
+        }
+        else
+        {
+            continueButton.onClick.AddListener(RestartScene);
+        }
+
+        mainMenuButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
+    }
+
 
     string GetCurrentPlanetName()
     {
@@ -59,7 +98,12 @@ public class LevelManager : MonoBehaviour
 
         }
     }
-
+    void LoadNextLevel()
+    {
+        int nextLevel = PlayerDataManager.GetLevel() + 1;
+        PlayerDataManager.SetLevel(nextLevel);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Aynı sahneyi tekrar yükleyerek yeni level’i başlat
+    }
     void LoadLevel(int level)
     {
         LevelData levelData = levelDatabase.levels.Find(l => l.level == level);
@@ -115,7 +159,7 @@ public class LevelManager : MonoBehaviour
         return null;
     }
 
-    public void LevelCompleted()
+    /*public void LevelCompleted()
     {
         int currentLevel = PlayerDataManager.GetLevel();
         Debug.Log($"🎯 Tamamlanan level: {currentLevel}");
@@ -128,8 +172,8 @@ public class LevelManager : MonoBehaviour
             ClickablePlanetDatabase.PlanetData targetPlanetData = planetDatabase.planets.Find(p => p.planetName == targetPlanetName);
             if (targetPlanetData != null)
             {
-                IncreasePlanetPopulation(targetPlanetName, 50);
-                Debug.Log($"🌍 {targetPlanetName} gezegeninin nüfusu +50 yapıldı.");
+                IncreasePlanetPopulation(targetPlanetName, 10);
+                Debug.Log($"🌍 {targetPlanetName} gezegeninin nüfusu +10 yapıldı.");
             }
             else
             {
@@ -148,7 +192,7 @@ public class LevelManager : MonoBehaviour
 
         // Ana menü sahnesine dön
         SceneManager.LoadScene("MainMenu");
-    }
+    }*/
     void RestartScene()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);

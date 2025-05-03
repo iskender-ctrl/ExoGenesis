@@ -28,9 +28,9 @@ public class GravityManager : MonoBehaviour
         gravityField.transform.SetParent(planet);
         gravityField.transform.localPosition = Vector3.zero;
 
-        // SphereCollider ekle
+        // SphereCollider ekle (tetikleyici olarak çalışır)
         SphereCollider gravityCollider = gravityField.AddComponent<SphereCollider>();
-        gravityCollider.isTrigger = true; // Çekim alanı tetikleyici olmalı
+        gravityCollider.isTrigger = true;
         gravityCollider.radius = Mathf.Sqrt(bodyData.mass) * GravitySettings.RadiusMultiplier;
 
         // GravityField objesini etiketle
@@ -39,41 +39,59 @@ public class GravityManager : MonoBehaviour
         else
             gravityField.tag = "GravityField";
 
-        // Küre görseli oluştur
-        GameObject sphereVisual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        sphereVisual.transform.SetParent(gravityField.transform);
-        sphereVisual.transform.localPosition = Vector3.zero;
-        sphereVisual.transform.localScale = Vector3.one * gravityCollider.radius * 2f; // Çapı collider ile eşleştir
+        // Quad görseli oluştur
+        GameObject quadVisual = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        quadVisual.transform.SetParent(gravityField.transform);
+        quadVisual.transform.localPosition = new Vector3(0f, -0.1f, 0f);
+
+        // Quad'ı XZ düzlemine döndür (varsayılanı XY düzlemi)
+        quadVisual.transform.localEulerAngles = new Vector3(90f, 0f, 0f);
+
+        // Quad'ın boyutunu collider çapına göre ayarla
+        float diameter = gravityCollider.radius * 2f;
+        quadVisual.transform.localScale = new Vector3(diameter, diameter, 1f);
 
         // Renderer ve materyal ayarı
-        MeshRenderer renderer = sphereVisual.GetComponent<MeshRenderer>();
-        // Yeni materyal örneği oluştur
+        MeshRenderer renderer = quadVisual.GetComponent<MeshRenderer>();
         Material newMaterial = new Material(gravityFieldMaterial);
         renderer.material = newMaterial;
 
-        float intensity1 = 0.3f;
-        float intensity2 = 0.1f;
-        // GravityColor veya Color değerini ayarla
+        // Renk ve efekt yoğunlukları
+        float minMass = 50f;
+        float maxMass = 550f;
+        float t = Mathf.InverseLerp(minMass, maxMass, bodyData.mass);
+
+
+
+        // Ya da gradient ile:
+        Gradient gradient = new Gradient();
+        gradient.SetKeys(
+            new GradientColorKey[] {
+        new GradientColorKey(Color.white, 0f),
+        new GradientColorKey(Color.blue, 0.25f),
+        new GradientColorKey(Color.green, 0.5f),
+        new GradientColorKey(Color.yellow, 0.75f),
+        new GradientColorKey(Color.red, 1f)
+            },
+            new GradientAlphaKey[] {
+        new GradientAlphaKey(1f, 0f),
+        new GradientAlphaKey(1f, 1f)
+            }
+        );
+
+        Color ringColor = gradient.Evaluate(t);
         if (planet.CompareTag("Target"))
-        {
-
-            // TargetField için renkler
-            newMaterial.SetColor("_GravityColor1", new Color(255f, 0f, 0f) * intensity1);    // Birinci renk
-            newMaterial.SetColor("_GravityColor2", new Color(255f, 0f, 0f) * intensity2); // İkinci renk
-        }
+            newMaterial.SetColor("_RingColor", Color.red);
         else
-        {
-            newMaterial.SetColor("_GravityColor1", new Color(255f, 255f, 255f) * intensity1);    // Birinci renk
-            newMaterial.SetColor("_GravityColor2", new Color(191f, 18f, 188f) * intensity2);   // İkinci renk
-        }
+            newMaterial.SetColor("_RingColor", ringColor);
 
-        // GravityColor değerini ayarla (mass'tan alınıyor)
-        float normalizedMass = Mathf.Clamp(bodyData.mass, 0, 400); // 0-1 arasında normalize et
-        newMaterial.SetFloat("_Gravity", normalizedMass);
 
-        // Collider görselinin fiziksel etkisini kaldır (sadece görsel için)
-        Destroy(sphereVisual.GetComponent<Collider>());
+
+
+        // Quad üzerindeki collider'ı kaldır (sadece görsel amaçlı)
+        Destroy(quadVisual.GetComponent<Collider>());
     }
+
 
 
     private void AddPlanetCollider(Transform planet)

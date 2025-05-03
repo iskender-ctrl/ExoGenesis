@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: GravityFieldMaterial
-  m_Shader: {fileID: -6465566751694194690, guid: 5e9a2731ee820cf44b8edfaa23ee062d, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 73b5a16739264314b8c798ce1068eb28, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -116,6 +116,8 @@ Material:
     - _OcclusionStrength: 1
     - _Offset: 0
     - _OuterRadius: 0.5
+    - _OutherFadeRange: 0.13
+    - _OutherRadius: 0.4
     - _Parallax: 0.005
     - _QueueControl: 1
     - _QueueOffset: 7
@@ -144,7 +146,7 @@ Material:
     - _GravityColor2: {r: 2.2706027, g: 0.071327835, b: 0, a: 0}
     - _MainColor: {r: 0.5283019, g: 0.15201138, b: 0.15201138, a: 0}
     - _ObjectScreenPos: {r: 0.5, g: 0.5, b: 0, a: 0}
-    - _RingColor: {r: 0.6600212, g: 3.396226, b: 1.162432, a: 0}
+    - _RingColor: {r: 0.22279833, g: 0.7049739, b: 0.65538865, a: 0.08627451}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

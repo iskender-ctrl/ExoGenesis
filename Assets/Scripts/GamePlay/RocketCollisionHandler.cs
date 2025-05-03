@@ -36,7 +36,7 @@ public class RocketCollisionHandler
                     float planetRadius = planetTransform.localScale.x * 0.5f;
                     float gravityFieldRadius = other.GetComponent<SphereCollider>().radius * planetTransform.localScale.x;
                     rocketLanding.InitializeLanding(planetRadius, gravityFieldRadius, planetTransform);
-                    LevelManager.Instance.LevelCompleted();
+                    LevelManager.Instance.OnSuccessfulShot();
                 }
                 break;
 

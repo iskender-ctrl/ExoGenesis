@@ -15,6 +15,7 @@ public class LevelData
     public int level;
     public List<PlanetDataLevel> planets;
     public string targetPlanet;
+    public int targetPopulation;
 }
 
 [System.Serializable]
