@@ -7,42 +7,57 @@ using UnityEngine.UI;
 public class LevelManager : MonoBehaviour
 {
     public static LevelManager Instance { get; set; }
-    public CelestialBodyData celestialBodyData; // Artık prefablar buradan alınacak
+    public CelestialBodyData celestialBodyData;
     private LevelDatabase levelDatabase;
     public ClickablePlanetDatabase planetDatabase;
     private string saveFilePath;
     public Transform spawnParent;
+
     [Header("UI")]
     [SerializeField] private GameObject successPanel;
     [SerializeField] private Button continueButton;
     [SerializeField] private Button mainMenuButton;
+    [SerializeField] private Button tryAgainButton;
+    [SerializeField] private FuelSystem fuelSystem;
+
+    private bool _panelReachedTarget = false;
+    private bool _alreadyScored = false;
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
     }
+
     void Start()
     {
         if (successPanel != null)
             successPanel.SetActive(false);
 
+        RocketLauncher.IsPanelOpen = false;
         saveFilePath = Application.persistentDataPath + "/saveData.json";
         LoadLevelData();
-        int currentLevel = PlayerDataManager.GetLevel();
-        LoadLevel(currentLevel);
+        LoadLevel(PlayerDataManager.GetLevel());
 
-        // 🌟 Oyunun başında gezegenlerin mevcut nüfusunu konsola yazdır
+        fuelSystem = FindObjectOfType<FuelSystem>();
+        if (fuelSystem != null)
+            fuelSystem.OnFuelDepleted += OnFuelDepleted;
+
         foreach (var planet in planetDatabase.planets)
         {
             int currentPopulation = LoadPlanetPopulation(planet.planetName, planet.defaultPopulation);
             planet.currentPopulation = currentPopulation;
-            Debug.Log($"🟢 {planet.planetName} mevcut nüfus: {currentPopulation}");
         }
     }
 
-
     public void OnSuccessfulShot()
     {
+        if (_panelReachedTarget || _alreadyScored || RocketLauncher.IsPanelOpen) return;
+
         string targetPlanetName = GetCurrentPlanetName();
         if (!string.IsNullOrEmpty(targetPlanetName))
         {
@@ -56,31 +71,75 @@ public class LevelManager : MonoBehaviour
             if (currentLevelData != null)
             {
                 bool reachedTarget = currentPopulation >= currentLevelData.targetPopulation;
-                ShowSuccessPanel(reachedTarget);
+
+                if (reachedTarget)
+                {
+                    int nextLevel = currentLevel + 1;
+                    PlayerDataManager.SetLevel(nextLevel);
+                    Debug.Log("🎉 Yeni level: " + nextLevel);
+                }
+
+                _alreadyScored = true;
+                ShowSuccessPanel(reachedTarget, 2f);
             }
         }
     }
 
-
-
-    private void ShowSuccessPanel(bool reachedTarget)
+    private void ShowSuccessPanel(bool reachedTarget, float delay)
     {
-        successPanel.SetActive(true);
+        if (_panelReachedTarget && !reachedTarget)
+        {
+            Debug.Log("⚠️ Panel zaten başarıyla açılmıştı, başarısız çağrı iptal.");
+            return;
+        }
+
+        _panelReachedTarget = reachedTarget;
+        CancelInvoke(nameof(DelayedShowSuccessPanel));
+        Invoke(nameof(DelayedShowSuccessPanel), delay);
+
         continueButton.onClick.RemoveAllListeners();
+        tryAgainButton.onClick.RemoveAllListeners();
         mainMenuButton.onClick.RemoveAllListeners();
 
-        if (reachedTarget)
-        {
-            continueButton.onClick.AddListener(LoadNextLevel);
-        }
-        else
-        {
-            continueButton.onClick.AddListener(RestartScene);
-        }
+        continueButton.gameObject.SetActive(reachedTarget);
+        tryAgainButton.gameObject.SetActive(!reachedTarget);
 
+        continueButton.onClick.AddListener(LoadNextLevel);
+        tryAgainButton.onClick.AddListener(OnTryAgain);
         mainMenuButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
     }
 
+    private void DelayedShowSuccessPanel()
+    {
+        RocketLauncher.IsPanelOpen = true;
+        successPanel.SetActive(true);
+    }
+
+    private void OnTryAgain()
+    {
+        if (fuelSystem != null)
+            fuelSystem.AddFuel(1);
+
+        successPanel.SetActive(false);
+        RocketLauncher.IsPanelOpen = false;
+        _panelReachedTarget = false;
+        _alreadyScored = false;
+    }
+
+    public void OnFuelDepleted()
+    {
+        if (!_panelReachedTarget)
+        {
+            Debug.Log("⛽ Yakıt bitti!");
+            ShowSuccessPanel(false, 1f);
+        }
+    }
+
+    public void OnRocketCrashed()
+    {
+        if (fuelSystem != null)
+            fuelSystem.UseFuel();
+    }
 
     string GetCurrentPlanetName()
     {
@@ -93,21 +152,17 @@ public class LevelManager : MonoBehaviour
     {
         TextAsset jsonFile = Resources.Load<TextAsset>("levelData");
         if (jsonFile != null)
-        {
             levelDatabase = JsonUtility.FromJson<LevelDatabase>(jsonFile.text);
-
-        }
     }
+
     void LoadNextLevel()
     {
-        int nextLevel = PlayerDataManager.GetLevel() + 1;
-        PlayerDataManager.SetLevel(nextLevel);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Aynı sahneyi tekrar yükleyerek yeni level’i başlat
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+
     void LoadLevel(int level)
     {
         LevelData levelData = levelDatabase.levels.Find(l => l.level == level);
-
         if (levelData != null)
         {
             foreach (PlanetDataLevel planet in levelData.planets)
@@ -120,82 +175,31 @@ public class LevelManager : MonoBehaviour
                     newPlanet.name = prefab.name;
                     newPlanet.transform.localScale = Vector3.one * planet.scale;
 
-                    // 🌟 TAG ATAMA
-                    if (planet.name == levelData.targetPlanet)
-                        newPlanet.tag = "Target";
-                    else
-                        newPlanet.tag = "CelestialBody";
+                    newPlanet.tag = planet.name == levelData.targetPlanet ? "Target" : "CelestialBody";
 
-                    // Nüfus yüklemesi
-                    ClickablePlanetDatabase.PlanetData planetData = planetDatabase.planets.Find(p => p.planetName == planet.name);
+                    var planetData = planetDatabase.planets.Find(p => p.planetName == planet.name);
                     if (planetData != null)
                     {
                         int savedPopulation = LoadPlanetPopulation(planetData.planetName, planetData.defaultPopulation);
                         planetData.currentPopulation = savedPopulation;
-                        Debug.Log($"🔵 {planetData.planetName} için yüklenen nüfus: {planetData.currentPopulation}");
                     }
 
-                    // Hedef gezegen rengi
                     if (planet.name == levelData.targetPlanet)
-                    {
                         newPlanet.GetComponent<Renderer>().material.color = Color.green;
-                    }
                 }
             }
         }
     }
-
 
     GameObject FindPlanetPrefab(string name)
     {
         foreach (var body in celestialBodyData.celestialBodies)
         {
             if (body.bodyName == name && body.prefab != null)
-            {
                 return body.prefab;
-            }
         }
         Debug.LogWarning($"Prefab bulunamadı: {name}");
         return null;
-    }
-
-    /*public void LevelCompleted()
-    {
-        int currentLevel = PlayerDataManager.GetLevel();
-        Debug.Log($"🎯 Tamamlanan level: {currentLevel}");
-
-        LevelData currentLevelData = levelDatabase.levels.Find(l => l.level == currentLevel);
-        if (currentLevelData != null)
-        {
-            string targetPlanetName = currentLevelData.targetPlanet;
-
-            ClickablePlanetDatabase.PlanetData targetPlanetData = planetDatabase.planets.Find(p => p.planetName == targetPlanetName);
-            if (targetPlanetData != null)
-            {
-                IncreasePlanetPopulation(targetPlanetName, 10);
-                Debug.Log($"🌍 {targetPlanetName} gezegeninin nüfusu +10 yapıldı.");
-            }
-            else
-            {
-                Debug.LogWarning($"🎯 {targetPlanetName} veritabanında bulunamadı!");
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"⚠️ Level {currentLevel} verisi bulunamadı.");
-        }
-
-        // 🔁 Şimdi level'i artır (artık bitirdik çünkü)
-        int nextLevel = currentLevel + 1;
-        PlayerDataManager.SetLevel(nextLevel);
-        Debug.Log($"✅ Yeni level: {nextLevel}");
-
-        // Ana menü sahnesine dön
-        SceneManager.LoadScene("MainMenu");
-    }*/
-    void RestartScene()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     void SavePlanetPopulation(string planetName, int population)
@@ -204,13 +208,9 @@ public class LevelManager : MonoBehaviour
         PlanetPopulation planetPopulation = saveData.planetPopulations.Find(p => p.planetName == planetName);
 
         if (planetPopulation != null)
-        {
             planetPopulation.population = population;
-        }
         else
-        {
             saveData.planetPopulations.Add(new PlanetPopulation { planetName = planetName, population = population });
-        }
 
         SaveDataToFile(saveData);
     }
@@ -219,27 +219,18 @@ public class LevelManager : MonoBehaviour
     {
         SaveData saveData = LoadSaveData();
         PlanetPopulation planetPopulation = saveData.planetPopulations.Find(p => p.planetName == planetName);
-
-        if (planetPopulation != null)
-        {
-            return planetPopulation.population;
-        }
-
-        return defaultPopulation;
+        return planetPopulation != null ? planetPopulation.population : defaultPopulation;
     }
 
     public void IncreasePlanetPopulation(string planetName, int amount)
     {
         int currentPopulation = LoadPlanetPopulation(planetName, 0);
         int newPopulation = currentPopulation + amount;
-
         SavePlanetPopulation(planetName, newPopulation);
 
-        ClickablePlanetDatabase.PlanetData updatedPlanetData = planetDatabase.planets.Find(p => p.planetName == planetName);
-        if (updatedPlanetData != null)
-        {
-            updatedPlanetData.currentPopulation = newPopulation;
-        }
+        var updated = planetDatabase.planets.Find(p => p.planetName == planetName);
+        if (updated != null)
+            updated.currentPopulation = newPopulation;
 
         Debug.Log($"📈 {planetName} nüfusu artırıldı! Yeni nüfus: {newPopulation}");
     }

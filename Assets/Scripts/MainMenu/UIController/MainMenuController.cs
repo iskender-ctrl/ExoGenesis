@@ -5,41 +5,35 @@ using TMPro;
 
 public class MainMenuController : MonoBehaviour
 {
-    public RectTransform[] panels; // UI panelleri
-    public Button[] buttons; // Panel butonları
-    public float transitionDuration = 0.5f; // Sayfa geçiş süresi
-    public float panelSpacing = 1920f; // Panellerin birbirine göre yatay mesafesi
-    public float buttonScaleSelected = 1.2f; // Seçili buton büyüklüğü
-    public float buttonScaleDefault = 1.0f; // Varsayılan buton büyüklüğü
-    public float buttonAnimationDuration = 0.3f; // Buton büyüme/küçülme süresi
+    public GameObject[] panels; // Artık RectTransform değil, GameObject
+    public Button[] buttons;
+    public float buttonScaleSelected = 1.2f;
+    public float buttonScaleDefault = 1.0f;
+    public float buttonAnimationDuration = 0.3f;
     public TextMeshProUGUI fuelText, coinsText;
 
-    private int currentPanelIndex = 0; // Hangi panelde olduğumuzu takip ederiz
+    private int currentPanelIndex = 1;
 
     void Start()
     {
-        // Tüm panelleri doğru pozisyona ayarla
+        // Tüm panellerin aktifliğini ayarla
         for (int i = 0; i < panels.Length; i++)
         {
-            panels[i].anchoredPosition = new Vector2(i * panelSpacing, 0);
+            panels[i].SetActive(i == currentPanelIndex); // Sadece home aktif
         }
 
-        // UI'yı PlayerDataManager'dan güncelle
         UpdateCoinsUI(PlayerDataManager.GetCoins());
         UpdateFuelUI(PlayerDataManager.GetFuel());
 
-        // Eventleri bağla
         PlayerDataManager.OnCoinsChanged += UpdateCoinsUI;
         PlayerDataManager.OnFuelChanged += UpdateFuelUI;
 
-        // Butonlara tıklanınca ilgili sayfaya geçmeleri için event ekle
         for (int i = 0; i < buttons.Length; i++)
         {
-            int index = i; // Lambda expression için index'i saklıyoruz
+            int index = i;
             buttons[i].onClick.AddListener(() => MoveToPanel(index));
         }
 
-        // İlk butonu seçili olarak büyüt
         UpdateButtonScales();
     }
 
@@ -51,21 +45,16 @@ public class MainMenuController : MonoBehaviour
             return;
         }
 
-        if (targetPanelIndex == currentPanelIndex) return; // Zaten o paneldeyse hiçbir şey yapma
+        if (targetPanelIndex == currentPanelIndex) return;
 
-        // Hedef pozisyonu hesapla
-        float targetX = -targetPanelIndex * panelSpacing;
-
-        // Tüm panelleri kaydır
-        foreach (RectTransform panel in panels)
+        // Panelleri aktif/inaktif yap
+        for (int i = 0; i < panels.Length; i++)
         {
-            panel.DOAnchorPosX(panel.anchoredPosition.x + (currentPanelIndex - targetPanelIndex) * panelSpacing, transitionDuration)
-                .SetEase(Ease.InOutCubic);
+            panels[i].SetActive(i == targetPanelIndex);
         }
 
-        currentPanelIndex = targetPanelIndex; // Şu anki paneli güncelle
+        currentPanelIndex = targetPanelIndex;
 
-        // Buton animasyonlarını güncelle
         UpdateButtonScales();
     }
 

@@ -10,6 +10,7 @@ using System.IO;
 
 public class DecorationController : MonoBehaviour
 {
+    public AstronautManager astronautManager;
     public static DecorationController Instance;
     public Image backgroundImage;
     public Transform itemSpawnPoint;
@@ -48,12 +49,10 @@ public class DecorationController : MonoBehaviour
 
         // 🌟 Nüfus metnini güncelle
         UpdatePopulationText(planetData.currentPopulation);
-
         ClearSpawnedItems();
         SpawnItems(planetData.items);
         SpawnPlanetSpecificPrefab(planetData.planetName);
     }
-
     private void SpawnPlanetSpecificPrefab(string planetName)
     {
         var mapping = planetPrefabs.Find(p => p.planetName == planetName);
@@ -63,8 +62,31 @@ public class DecorationController : MonoBehaviour
             planetObject.name = planetName + "_Prefab";
             planetObject.SetActive(true); // 🌟 Daima aktif olacak
             spawnedItems.Add(planetObject);
+
+            // 🚀 Astronot spawn işlemini gecikmeli başlat
+            StartCoroutine(DelayedSpawnAstronauts(planetObject));
         }
     }
+    private System.Collections.IEnumerator DelayedSpawnAstronauts(GameObject planetObject)
+    {
+        // 🌙 Bir frame bekle (tüm objeler instantiate olsun)
+        yield return null;
+
+        Transform spawnPoint = planetObject.transform.Find("AstronautSpawnPoint");
+        var planetData = MapDecorationController.Instance.planetDatabase.planets
+            .Find(p => p.planetName == MapDecorationController.Instance.planetName);
+
+        if (spawnPoint != null && astronautManager != null && planetData != null)
+        {
+            astronautManager.spawnAreaCenter = spawnPoint;
+            astronautManager.SpawnAstronauts(planetData.currentPopulation);
+        }
+        else
+        {
+            Debug.LogWarning("❌ AstronautSpawnPoint bulunamadı veya population verisi yok.");
+        }
+    }
+
     private void SpawnItems(List<ClickablePlanetDatabase.DecorationItem> items)
     {
         // 🌟 Gezegenin mevcut nüfusunu al

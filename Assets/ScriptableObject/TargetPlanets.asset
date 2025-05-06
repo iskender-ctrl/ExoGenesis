@@ -27,5 +27,5 @@ MonoBehaviour:
   - planetName: planet5
     bG: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
     defaultPopulation: 0
-    currentPopulation: 0
+    currentPopulation: 20
     items: []

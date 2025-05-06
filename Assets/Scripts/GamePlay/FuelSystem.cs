@@ -4,12 +4,14 @@ using UnityEngine.UI;
 public class FuelSystem : MonoBehaviour
 {
     [SerializeField] private Image fuelBar;
-    
-    private int maxFuel = 1;
+    [SerializeField] private int maxFuel = 50; // 🔧 Inspector'dan ayarlanabilir hale getirildi
+    public System.Action OnFuelDepleted;
+
     private int currentFuel;
+
     void Start()
     {
-        currentFuel = maxFuel * 50;
+        currentFuel = maxFuel;
         UpdateFuelBar();
     }
 
@@ -22,9 +24,23 @@ public class FuelSystem : MonoBehaviour
         }
     }
 
+    public void AddFuel(int amount = 1)
+    {
+        currentFuel += amount;
+        if (currentFuel > maxFuel)
+            currentFuel = maxFuel;
+
+        UpdateFuelBar();
+    }
+
     private void UpdateFuelBar()
     {
-        fuelBar.fillAmount = (float)currentFuel / 50;
+        fuelBar.fillAmount = (float)currentFuel / maxFuel;
+
+        if (currentFuel <= 0)
+        {
+            OnFuelDepleted?.Invoke();
+        }
     }
 
     public bool HasFuel()

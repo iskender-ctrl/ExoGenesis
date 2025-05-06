@@ -528,7 +528,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 2
+    m_Type: 0
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -1103,13 +1103,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1509045325}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 10, z: 0}
+  m_LocalRotation: {x: 0.51929533, y: 0, z: 0, w: 0.85459495}
+  m_LocalPosition: {x: 0, y: 17, z: -6.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 62.57, y: 0, z: 0}
 --- !u!114 &1509045329
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1278,6 +1278,53 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1983767333
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1983767334}
+  - component: {fileID: 1983767335}
+  m_Layer: 0
+  m_Name: AstronautManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1983767334
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1983767333}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.18, y: 1.34, z: -2.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1983767335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1983767333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de6aafea1b7af0e4580233af03193387, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  astronautPrefab: {fileID: 1836358535241694568, guid: 6bee07ccfdd20ef4bb97e3eb3d6f70a3, type: 3}
+  spawnAreaCenter: {fileID: 0}
+  spawnAreaSize: {x: 10, y: 10}
 --- !u!1 &2127796556
 GameObject:
   m_ObjectHideFlags: 0
@@ -1684,6 +1731,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6dc5d1c90d8758841a7633f9b8b7f3ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  astronautManager: {fileID: 1983767335}
   backgroundImage: {fileID: 7946839926366626328}
   itemSpawnPoint: {fileID: 7308312626970108006}
   itemPrefab: {fileID: 3877261437769101040, guid: f1344044ff465014ea20161a565f31f7, type: 3}
@@ -1691,9 +1739,9 @@ MonoBehaviour:
   planetNameText: {fileID: 8105797354918163122}
   spawnedItems: []
   planetPrefabs:
-  - planetName: Mars
+  - planetName: planet2
     planetPrefab: {fileID: 7965255679034384901, guid: 4804aaaed7b76ef4390c0ba0203dd8ac, type: 3}
-  - planetName: Earth
+  - planetName: planet5
     planetPrefab: {fileID: 2166654871094782144, guid: 5510cbbfd3db37b458cda65581933952, type: 3}
   planetTargetParent: {fileID: 1676961161}
   warningText: {fileID: 848515451}
@@ -2675,5 +2723,6 @@ SceneRoots:
   - {fileID: 1509045328}
   - {fileID: 568425386}
   - {fileID: 1676961161}
+  - {fileID: 1983767334}
   - {fileID: 144955037}
   - {fileID: 1611518786}
