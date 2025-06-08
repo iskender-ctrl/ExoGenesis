@@ -12,7 +12,7 @@ public class LevelManager : MonoBehaviour
     public ClickablePlanetDatabase planetDatabase;
     private string saveFilePath;
     public Transform spawnParent;
-
+    public CelestialBodyManager celestialBodyManager;
     [Header("UI")]
     [SerializeField] private GameObject successPanel;
     [SerializeField] private Button continueButton;
@@ -43,7 +43,7 @@ public class LevelManager : MonoBehaviour
         LoadLevelData();
         LoadLevel(PlayerDataManager.GetLevel());
 
-        fuelSystem = FindObjectOfType<FuelSystem>();
+        fuelSystem = FindFirstObjectByType<FuelSystem>();
         if (fuelSystem != null)
             fuelSystem.OnFuelDepleted += OnFuelDepleted;
 
@@ -53,37 +53,51 @@ public class LevelManager : MonoBehaviour
             planet.currentPopulation = currentPopulation;
         }
     }
-
+    // (1) ► YENİ: her roket atışında durum bayraklarını sıfırlamak için
+    public void ResetShotState()                      // NEW
+    {
+        _alreadyScored = false;
+        // _panelReachedTarget'ı sıfırlamıyoruz; hedefe ulaşıldıysa true kalmalı
+    }
     public void OnSuccessfulShot()
     {
         if (_panelReachedTarget || _alreadyScored || RocketLauncher.IsPanelOpen) return;
 
         string targetPlanetName = GetCurrentPlanetName();
-        if (!string.IsNullOrEmpty(targetPlanetName))
+        if (string.IsNullOrEmpty(targetPlanetName)) return;
+
+        IncreasePlanetPopulation(targetPlanetName, 10);
+        Debug.Log($"🎯 Başarılı atış! {targetPlanetName} +10 nüfus");
+
+        // Seviye ilerleme hesabı HÂLÂ yapılıyor
+        int currentPopulation = LoadPlanetPopulation(targetPlanetName, 0);
+        int currentLevel = PlayerDataManager.GetLevel();
+        LevelData currentLevelData = levelDatabase.levels.Find(l => l.level == currentLevel);
+
+        if (currentLevelData != null && currentPopulation >= currentLevelData.targetPopulation)
         {
-            IncreasePlanetPopulation(targetPlanetName, 10);
-            Debug.Log($"🎯 Başarılı atış! {targetPlanetName} +10 nüfus");
-
-            int currentPopulation = LoadPlanetPopulation(targetPlanetName, 0);
-            int currentLevel = PlayerDataManager.GetLevel();
-            LevelData currentLevelData = levelDatabase.levels.Find(l => l.level == currentLevel);
-
-            if (currentLevelData != null)
-            {
-                bool reachedTarget = currentPopulation >= currentLevelData.targetPopulation;
-
-                if (reachedTarget)
-                {
-                    int nextLevel = currentLevel + 1;
-                    PlayerDataManager.SetLevel(nextLevel);
-                    Debug.Log("🎉 Yeni level: " + nextLevel);
-                }
-
-                _alreadyScored = true;
-                ShowSuccessPanel(reachedTarget, 2f);
-            }
+            int nextLevel = currentLevel + 1;
+            PlayerDataManager.SetLevel(nextLevel);
+            Debug.Log("🎉 Yeni level: " + nextLevel);
         }
+
+        _alreadyScored = true;
+
+        /*  ▼▼  K R İ T İ K  D E Ğ İ Ş İ K L İ K  ▼▼
+            Panelde daima Continue + Main Menu gözüksün diye
+            reachedTarget parametresini **true** gönderiyoruz.
+        */
+        ShowSuccessPanel(true, 2f);                          // ← değiştirildi
     }
+
+    // (3) ► BAŞARISIZ ATIŞ: panel AÇMA, sadece bayrağı set et
+    public void OnFailedShot(float delay = 0f)        // NEW (tamamını değiştir)
+    {
+        if (_panelReachedTarget || _alreadyScored) return;
+        _alreadyScored = true;                        // aynı roket için tekrar sayma
+        // **Panel açılmaz** – yakıt bitince OnFuelDepleted() halledecek
+    }
+
 
     private void ShowSuccessPanel(bool reachedTarget, float delay)
     {
@@ -107,6 +121,7 @@ public class LevelManager : MonoBehaviour
         continueButton.onClick.AddListener(LoadNextLevel);
         tryAgainButton.onClick.AddListener(OnTryAgain);
         mainMenuButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
+
     }
 
     private void DelayedShowSuccessPanel()
@@ -172,6 +187,7 @@ public class LevelManager : MonoBehaviour
                 {
                     Vector3 position = new Vector3(planet.position[0], planet.position[1], planet.position[2]);
                     GameObject newPlanet = Instantiate(prefab, position, Quaternion.identity, spawnParent);
+                    //celestialBodyManager.celestialObjects.Add(newPlanet);
                     newPlanet.name = prefab.name;
                     newPlanet.transform.localScale = Vector3.one * planet.scale;
 

@@ -8,7 +8,8 @@ public class RocketBehavior : MonoBehaviour
     private RocketMovement rocketMovement;
     private RocketCollisionHandler rocketCollisionHandler;
     private RocketLanding rocketLanding;
-
+    private float offScreenTimer = 0f;                 // NEW
+    private const float offScreenThreshold = 2f;       // NEW
     void Start()
     {
         rocketRigidbody = GetComponent<Rigidbody>();
@@ -32,9 +33,27 @@ public class RocketBehavior : MonoBehaviour
         {
             transform.rotation = Quaternion.LookRotation(rocketRigidbody.linearVelocity.normalized);
         }
-
+        HandleOffScreen();                             // NEW
     }
+    private void HandleOffScreen()
+    {
+        Vector3 vp = Camera.main.WorldToViewportPoint(transform.position);
+        bool onScreen = vp.z > 0 && vp.x >= 0 && vp.x <= 1 && vp.y >= 0 && vp.y <= 1;
 
+        if (onScreen)
+        {
+            offScreenTimer = 0f;
+            return;
+        }
+
+        offScreenTimer += Time.deltaTime;
+        if (offScreenTimer >= offScreenThreshold)
+        {
+            LevelManager.Instance?.OnFailedShot();        // başarısız atış
+            LevelManager.Instance?.OnRocketCrashed();     // yakıt-1
+            Destroy(gameObject);
+        }
+    }
     void OnTriggerEnter(Collider other)
     {
         rocketCollisionHandler.HandleTriggerEnter(other);

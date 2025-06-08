@@ -17,7 +17,7 @@ MonoBehaviour:
     mass: 300
     rotationSpeed: 20
     prefab: {fileID: 80315627511360449, guid: 91c474224c9a5484fa3fe2e8d4286082, type: 3}
-    orbitAround: 
+    orbitAround: planet2
     isTarget: 0
     maxPopulation: 0
   - bodyName: planet2

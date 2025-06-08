@@ -496,6 +496,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38296c0e81c258a45bcbb8e9b20f8d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  celestialObjects: []
 --- !u!1 &279650854
 GameObject:
   m_ObjectHideFlags: 0
@@ -542,7 +543,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gravitationalConstant: 0.0006
   radiusMultiplier: 0.03
-  orbitalSpeedMultiplier: 0
+  orbitalSpeedMultiplier: 100000
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -833,6 +834,7 @@ MonoBehaviour:
   celestialBodyData: {fileID: 11400000, guid: fa32b976cb5063c4ca6baf094013cfb3, type: 2}
   planetDatabase: {fileID: 11400000, guid: 161bb7313d0f5d846a0832e4b8ea3ab6, type: 2}
   spawnParent: {fileID: 248593866}
+  celestialBodyManager: {fileID: 248593868}
   successPanel: {fileID: 487630414}
   continueButton: {fileID: 835402429}
   mainMenuButton: {fileID: 136373726}

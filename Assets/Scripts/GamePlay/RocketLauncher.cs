@@ -121,6 +121,8 @@ public class RocketLauncher : MonoBehaviour
 
     private void FireRocket()
     {
+        // ► (1) Her yeni roket öncesi shot-state reset
+        LevelManager.Instance?.ResetShotState();          // NEW
         Vector3 targetPos = GetTouchOrMousePosition();
         Vector3 direction = (targetPos - spawnPoint.position).normalized;
 

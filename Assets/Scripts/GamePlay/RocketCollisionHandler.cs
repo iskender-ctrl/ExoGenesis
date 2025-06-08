@@ -42,6 +42,8 @@ public class RocketCollisionHandler
 
             case "CelestialBody":
                 rocketBehavior.InstantiateExplosion(rocketRigidbody.position);
+                LevelManager.Instance?.OnFailedShot();            // NEW (panel açmaz)
+                LevelManager.Instance?.OnRocketCrashed();         // yakıt-1
                 DestroyRocket();
                 break;
         }
@@ -71,6 +73,8 @@ public class RocketCollisionHandler
         }
         else if (collision.gameObject.CompareTag("CelestialBody"))
         {
+            LevelManager.Instance?.OnFailedShot();            // NEW
+            LevelManager.Instance?.OnRocketCrashed();         // yakıt-1
             DestroyRocket();
         }
     }
