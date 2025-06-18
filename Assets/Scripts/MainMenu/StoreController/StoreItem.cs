@@ -1,56 +1,52 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.Purchasing;
-using System.Linq;
 
-[ExecuteAlways]
 public class StoreItem : MonoBehaviour
 {
-    public string productId; 
-    public TextMeshProUGUI priceText;
+    [Header("Bağlantılar (boş bırakılabilir)")]
+    [SerializeField] private TextMeshProUGUI priceText;   // Inspector’da atıksız olabilir
+    [SerializeField] private string priceTextPath = "Price"; // child objenin adı
 
-    private void OnEnable()
+    [Header("Ürün Bilgisi")]
+    [HideInInspector] public RocketData.Rocket rocketInfo;   // ShopManager set edecek
+
+    private void Awake()
     {
-        UpdatePrice();
+        // priceText el ile atanmadıysa bul
+        if (priceText == null)
+        {
+            Transform t = transform.Find(priceTextPath);
+            if (t != null) priceText = t.GetComponent<TextMeshProUGUI>();
+        }
     }
 
-    public void UpdatePrice()
+    private void OnEnable() => Refresh();
+
+    /// <summary>ShopManager instantiation sonrası çağırır.</summary>
+    public void Initialize(RocketData.Rocket info)
     {
+        rocketInfo = info;
+        Refresh();
+    }
+
+    public void Refresh()
+    {
+        if (priceText == null || rocketInfo == null) return;
+
+        if (rocketInfo.payment == RocketData.PaymentType.Gold)
+        {
+            priceText.text = $"{rocketInfo.price:N0} <sprite name=\"Gold\">";
+            return;
+        }
+
 #if UNITY_EDITOR
-        var catalog = ProductCatalog.LoadDefaultCatalog();
-        var product = catalog.allProducts.FirstOrDefault(p => p.id == productId);
-
-        if (product != null)
-        {
-            // Simülasyon için ürün adını ve varsayılan fiyat göster
-            string simulatedPrice = !string.IsNullOrEmpty(product.id) 
-                ? $"{product.id} - 9.99₺ (Simülasyon)" 
-                : "9.99₺ (Simülasyon)";
-
-            priceText.text = simulatedPrice;
-        }
-        else
-        {
-            priceText.text = "Ürün bulunamadı";
-        }
+        priceText.text = "IAP";
 #else
-        // Oyun çalışırken gerçek fiyatı göster
-        if (IAPManager.Instance != null)
-        {
-            var product = IAPManager.Instance.GetProductById(productId);
-            if (product != null && product.availableToPurchase)
-            {
-                priceText.text = product.metadata.localizedPriceString;
-            }
-            else
-            {
-                priceText.text = "Yükleniyor...";
-            }
-        }
-        else
-        {
-            priceText.text = "IAP Başlatılmadı";
-        }
+        var prod = IAPManager.Instance?.GetProductById(rocketInfo.iapProductId);
+        priceText.text = (prod != null && prod.availableToPurchase)
+            ? prod.metadata.localizedPriceString
+            : "Yükleniyor…";
 #endif
     }
 }

@@ -6,23 +6,28 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
-using System.IO;
 
 public class DecorationController : MonoBehaviour
 {
+    [Header("Refs")]
     public AstronautManager astronautManager;
-    public static DecorationController Instance;
     public Image backgroundImage;
-    public Transform itemSpawnPoint;
-    public GameObject itemPrefab, decorationPopUp;
-
-    public TextMeshProUGUI planetNameText;
-    public List<GameObject> spawnedItems = new List<GameObject>();
+    public Transform itemSpawnPoint;          // UI’deki butonların geleceği parent
+    public GameObject itemPrefab;             // Tek bir UI item prefab’ı
+    public GameObject decorationPopUp;        // Aç/iptal popup’ı
+    public Transform planetTargetParent;      // Sahnedeki gezegen (ve child’ları) için parent
     public List<PlanetPrefabMapping> planetPrefabs;
-    public Transform planetTargetParent;
-    private SaveData saveData = new SaveData();
-    private string saveFilePath;
-    public TextMeshProUGUI warningText, populationText;
+
+    [Header("UI")]
+    public TextMeshProUGUI planetNameText;
+    public TextMeshProUGUI warningText;
+    public TextMeshProUGUI populationText;
+
+    [HideInInspector] public static DecorationController Instance;
+
+    // Runtime listeleri
+    private readonly List<GameObject> spawnedItems = new();
+
     [System.Serializable]
     public class PlanetPrefabMapping
     {
@@ -30,331 +35,245 @@ public class DecorationController : MonoBehaviour
         public GameObject planetPrefab;
     }
 
+    /*─────────────────────────────── L I F E  C Y C L E ───────────────────────────────*/
     private void Awake()
     {
         Instance = this;
-        saveFilePath = Path.Combine(Application.persistentDataPath, "saveData.json");
-        SetPlanetData(MapDecorationController.Instance.planetDatabase.planets.Find(p => p.planetName == MapDecorationController.Instance.planetName));
-        LoadData();
+
+        // Aktif gezegen verisini bul
+        var planetData = MapDecorationController.Instance.planetDatabase
+            .planets.Find(p => p.planetName == MapDecorationController.Instance.planetName);
+
+        SetPlanetData(planetData);
+        LoadDecorationData();          // daha önce açılan dekorasyonları uygula
     }
+
+    /*──────────────────────────── S E T U P  /  S P A W N ─────────────────────────────*/
     public void SetPlanetData(ClickablePlanetDatabase.PlanetData planetData)
     {
-        if (planetNameText != null)
-            planetNameText.text = planetData.planetName;
+        if (planetNameText) planetNameText.text = planetData.planetName;
+        if (backgroundImage && planetData.bG) backgroundImage.sprite = planetData.bG;
 
-        if (backgroundImage != null && planetData.bG != null)
-        {
-            backgroundImage.sprite = planetData.bG;
-        }
-
-        // 🌟 Nüfus metnini güncelle
         UpdatePopulationText(planetData.currentPopulation);
+
         ClearSpawnedItems();
         SpawnItems(planetData.items);
         SpawnPlanetSpecificPrefab(planetData.planetName);
     }
+
     private void SpawnPlanetSpecificPrefab(string planetName)
     {
         var mapping = planetPrefabs.Find(p => p.planetName == planetName);
-        if (mapping != null && mapping.planetPrefab != null)
-        {
-            GameObject planetObject = Instantiate(mapping.planetPrefab, Vector3.zero, Quaternion.identity, planetTargetParent);
-            planetObject.name = planetName + "_Prefab";
-            planetObject.SetActive(true); // 🌟 Daima aktif olacak
-            spawnedItems.Add(planetObject);
+        if (mapping == null || mapping.planetPrefab == null) return;
 
-            // 🚀 Astronot spawn işlemini gecikmeli başlat
-            StartCoroutine(DelayedSpawnAstronauts(planetObject));
-        }
+        GameObject planetObj = Instantiate(mapping.planetPrefab, Vector3.zero,
+                                           Quaternion.identity, planetTargetParent);
+        planetObj.name = planetName + "_Prefab";
+        planetObj.SetActive(true);                          // Gezegen daima aktif
+
+        spawnedItems.Add(planetObj);
+
+        // Astronotları bir frame sonra spawn et
+        StartCoroutine(DelayedSpawnAstronauts(planetObj));
     }
+
     private System.Collections.IEnumerator DelayedSpawnAstronauts(GameObject planetObject)
     {
-        // 🌙 Bir frame bekle (tüm objeler instantiate olsun)
-        yield return null;
+        yield return null; // 1 frame
 
         Transform spawnPoint = planetObject.transform.Find("AstronautSpawnPoint");
-        var planetData = MapDecorationController.Instance.planetDatabase.planets
-            .Find(p => p.planetName == MapDecorationController.Instance.planetName);
+        var planetData = MapDecorationController.Instance.planetDatabase
+            .planets.Find(p => p.planetName == MapDecorationController.Instance.planetName);
 
-        if (spawnPoint != null && astronautManager != null && planetData != null)
+        if (spawnPoint && astronautManager && planetData != null)
         {
             astronautManager.spawnAreaCenter = spawnPoint;
             astronautManager.SpawnAstronauts(planetData.currentPopulation);
         }
         else
-        {
             Debug.LogWarning("❌ AstronautSpawnPoint bulunamadı veya population verisi yok.");
-        }
     }
 
+    /*─────────────────────────── I T E M   (U I)  S P A W N ───────────────────────────*/
     private void SpawnItems(List<ClickablePlanetDatabase.DecorationItem> items)
     {
-        // 🌟 Gezegenin mevcut nüfusunu al
-        var planetData = MapDecorationController.Instance.planetDatabase.planets
-            .Find(p => p.planetName == MapDecorationController.Instance.planetName);
-        int currentPopulation = planetData != null ? planetData.currentPopulation : 0;
+        var planetData = MapDecorationController.Instance.planetDatabase
+            .planets.Find(p => p.planetName == MapDecorationController.Instance.planetName);
+
+        int currentPop = planetData != null ? planetData.currentPopulation : 0;
 
         foreach (var item in items)
         {
-            // 🌟 Silinen öğe daha önce kaydedilmiş mi?
-            if (saveData.removedItems.Contains(item.decorationName))
-            {
-                Debug.Log(item.decorationName + " daha önce silinmiş, listelenmiyor.");
-                continue;  // Listeleme
-            }
+            // Listeden kalıcı silindiyse atla
+            if (SaveSystem.IsItemRemoved(item.decorationName))
+                continue;
 
-            if (itemPrefab != null && itemSpawnPoint != null)
-            {
-                GameObject newItem = Instantiate(itemPrefab, itemSpawnPoint.position, Quaternion.identity, itemSpawnPoint);
-                newItem.name = item.decorationName;
+            GameObject uiItem = Instantiate(itemPrefab, itemSpawnPoint.position,
+                                            Quaternion.identity, itemSpawnPoint);
+            uiItem.name = item.decorationName;
 
-                // 🌟 Item bileşenlerini bul
-                Image itemIcon = newItem.transform.Find("Icon")?.GetComponent<Image>();
-                TextMeshProUGUI itemNameText = newItem.transform.Find("Name")?.GetComponent<TextMeshProUGUI>();
-                Button itemButton = newItem.GetComponent<Button>();
+            // Görseller & metin
+            Image icon = uiItem.transform.Find("Icon")?.GetComponent<Image>();
+            TextMeshProUGUI nameTxt = uiItem.transform.Find("Name")?.GetComponent<TextMeshProUGUI>();
+            if (icon) icon.sprite = item.icon;
+            if (nameTxt) nameTxt.text = item.decorationName;
 
-                // 🌟 Butonun child'ı olan TextMeshProUGUI bileşenini bul
+            // Nüfus kontrolü
+            Button btn = uiItem.GetComponent<Button>();
+            bool unlocked = currentPop >= item.requiredPopulation;
+            if (icon) icon.color = unlocked ? Color.white : Color.gray;
+            if (btn) btn.interactable = unlocked;
 
-                // 🌟 Item bilgilerini ayarla
-                if (itemIcon != null) itemIcon.sprite = item.icon;
-                if (itemNameText != null) itemNameText.text = item.decorationName;
+            // Butonun child’ındaki nüfus metni
+            PlanetButton planetBtn = uiItem.GetComponentInChildren<PlanetButton>();
+            if (planetBtn) planetBtn.childName = item.decorationName;
 
+            TextMeshProUGUI reqTxt = planetBtn?.transform.GetChild(0)?.GetComponent<TextMeshProUGUI>();
+            if (reqTxt) reqTxt.text = $"Nüfus: {item.requiredPopulation}";
 
-
-                // 🌟 Nüfus yeterli mi?
-                if (currentPopulation < item.requiredPopulation)
-                {
-                    // 🌟 Nüfus yetersizse, itemi grileştir veya pasif yap
-                    if (itemIcon != null) itemIcon.color = Color.gray;
-                    if (itemButton != null) itemButton.interactable = false;
-                }
-                else
-                {
-                    // 🌟 Nüfus yeterliyse, itemi aktif yap
-                    if (itemIcon != null) itemIcon.color = Color.white;
-                    if (itemButton != null) itemButton.interactable = true;
-                }
-
-                // 🌟 Butona tıklama özelliği ekle
-                PlanetButton relatedButton = newItem.GetComponentInChildren<PlanetButton>();
-                if (relatedButton != null)
-                {
-                    relatedButton.childName = item.decorationName;
-                }
-                TextMeshProUGUI requiredPopulationText = relatedButton.transform.GetChild(0).transform.GetComponent<TextMeshProUGUI>();
-
-                // 🌟 Required population değerini butonun child'ına yazdır
-                if (requiredPopulationText != null)
-                {
-                    requiredPopulationText.text = "Nüfus: " + item.requiredPopulation.ToString();
-                }
-
-                spawnedItems.Add(newItem);
-            }
-        }
-    }
-    private void CheckPlanetCollectionComplete(string planetName)
-    {
-        var planetData = MapDecorationController.Instance.planetDatabase.planets
-            .Find(p => p.planetName == planetName);
-
-        if (planetData == null) return;
-
-        // 🔍 Tüm item'ler aktif mi?
-        bool allDecorationsActive = true;
-        foreach (var item in planetData.items)
-        {
-            if (!saveData.activeObjects.Contains(item.decorationName))
-            {
-                allDecorationsActive = false;
-                break;
-            }
-        }
-
-        if (allDecorationsActive)
-        {
-            if (!InventoryManager.Instance.GetCollectionItems().Contains(planetName))
-            {
-                InventoryManager.Instance.AddCollectionItem(planetName);
-                Debug.Log("🌟 Koleksiyon tamamlandı ve eklendi: " + planetName);
-            }
+            spawnedItems.Add(uiItem);
         }
     }
 
-    private void UpdatePopulationText(int currentPopulation)
-    {
-        if (populationText != null)
-        {
-            populationText.text = "Population: " + currentPopulation.ToString();
-        }
-    }
-
-    private void ClearSpawnedItems()
-    {
-        foreach (GameObject item in spawnedItems)
-        {
-            Destroy(item);
-        }
-        spawnedItems.Clear();
-    }
-
-    public void LoadScene()
-    {
-        SceneManager.LoadSceneAsync(1);
-    }
-
+    /*────────────────────────── D E K O R A S Y O N  A C M A ─────────────────────────*/
     public void ActivateChild(string childName)
     {
-        Debug.Log("Aktif edilecek child obje: " + childName);
         decorationPopUp.SetActive(false);
 
-        // 🌟 İlgili gezegenin verisini bul
         var planetData = MapDecorationController.Instance.planetDatabase.planets
             .Find(p => p.planetName == MapDecorationController.Instance.planetName);
+        if (planetData == null) return;
 
-        if (planetData == null)
-        {
-            Debug.LogWarning("Gezegen verisi bulunamadı.");
-            return;
-        }
+        var itemData = planetData.items.Find(i => i.decorationName == childName);
+        if (itemData == null) return;
 
-        // 🌟 Dekorasyon öğesini bul
-        var itemData = planetData.items.Find(item => item.decorationName == childName);
-
-        if (itemData == null)
-        {
-            Debug.LogWarning("İlgili DecorationItem bulunamadı.");
-            return;
-        }
-
-        // 🌟 Nüfus kontrolü
         if (planetData.currentPopulation < itemData.requiredPopulation)
         {
             ShowWarning($"Bu dekorasyonu almak için en az {itemData.requiredPopulation} nüfusa ihtiyacınız var!");
             return;
         }
 
-        Debug.Log($"Dekorasyon açıldı: {childName} (Gereken nüfus: {itemData.requiredPopulation}, Mevcut nüfus: {planetData.currentPopulation})");
-
-        // 🌟 Child objeyi aktif et
+        // Çocuğu (Prefab içindeki objeyi) aktif et
         foreach (Transform planet in planetTargetParent)
         {
-            Transform targetChild = planet.Find(childName);
-            if (targetChild != null)
+            Transform target = planet.Find(childName); // child direkt altındaysa
+            if (target != null)
             {
-                targetChild.gameObject.SetActive(true);
-                Debug.Log("Aktif edildi: " + targetChild.name);
-
-                if (!saveData.activeObjects.Contains(childName))
-                {
-                    saveData.activeObjects.Add(childName);
-                    SaveData();
-                }
-
-                RemoveItemFromList(childName);
-
-                // 🌟 Nüfus metnini güncelle
-                UpdatePopulationText(planetData.currentPopulation);
+                target.gameObject.SetActive(true);
+                SaveSystem.AddActiveObject(childName);     // KAYIT
+                RemoveItemFromList(childName);             // Butonu listeden sil
                 CheckPlanetCollectionComplete(planetData.planetName);
                 return;
             }
         }
+        Debug.LogWarning($"Child obje bulunamadı: {childName}");
     }
+    /// <summary>
+    /// Bu gezegendeki TÜM dekorasyonlar açıldıysa koleksiyon ödülünü ekler.
+    /// </summary>
+    private void CheckPlanetCollectionComplete(string planetName)
+    {
+        // Gezegen verisini bul
+        var planetData = MapDecorationController.Instance.planetDatabase
+            .planets.Find(p => p.planetName == planetName);
+        if (planetData == null) return;
 
-    private void ShowWarning(string message)
-    {
-        warningText.text = message;
-        warningText.gameObject.SetActive(true);
-        Invoke(nameof(HideWarning), 2f); // 2 saniye sonra kapat
-    }
-
-    private void HideWarning()
-    {
-        warningText.gameObject.SetActive(false);
-    }
-
-    private void SaveData()
-    {
-        string json = JsonUtility.ToJson(saveData, true);
-        File.WriteAllText(saveFilePath, json);
-        Debug.Log("Veri kaydedildi: " + saveFilePath);
-    }
-    private void LoadData()
-    {
-        if (File.Exists(saveFilePath))
+        // Tüm dekorasyonlar aktif mi?
+        bool allActive = true;
+        foreach (var item in planetData.items)
         {
-            string json = File.ReadAllText(saveFilePath);
-            saveData = JsonUtility.FromJson<SaveData>(json);
-            Debug.Log("Veri yüklendi: " + saveFilePath);
-
-            // 🌟 Kaydedilen aktif objeleri otomatik olarak aktif et
-            foreach (string activeObjectName in saveData.activeObjects)
+            if (!SaveSystem.IsObjectActive(item.decorationName))
             {
-                foreach (Transform planet in planetTargetParent)
-                {
-                    Transform targetChild = planet.Find(activeObjectName);
-                    if (targetChild != null)
-                    {
-                        targetChild.gameObject.SetActive(true);
-                    }
-                }
-            }
-
-            // 🌟 Silinen liste öğelerini kaldır
-            foreach (string removedItem in saveData.removedItems)
-            {
-                GameObject itemToRemove = spawnedItems.Find(item => item.name == removedItem);
-                if (itemToRemove != null)
-                {
-                    spawnedItems.Remove(itemToRemove);
-                    Destroy(itemToRemove);
-                    Debug.Log(removedItem + " daha önce silinmişti, tekrar listelenmedi.");
-                }
-            }
-
-            // 🌟 Nüfus metnini güncelle
-            var planetData = MapDecorationController.Instance.planetDatabase.planets
-                .Find(p => p.planetName == MapDecorationController.Instance.planetName);
-            if (planetData != null)
-            {
-                UpdatePopulationText(planetData.currentPopulation);
+                allActive = false;
+                break;
             }
         }
+
+        // Koleksiyon ödülünü ver
+        if (allActive &&
+            !InventoryManager.Instance.GetCollectionItems().Contains(planetName))
+        {
+            InventoryManager.Instance.AddCollectionItem(planetName);
+            Debug.Log($"🌟 Koleksiyon tamamlandı: {planetName}");
+        }
+    }
+
+    /*─────────────────────────────── L O A D / S A V E ───────────────────────────────*/
+    private void LoadDecorationData()
+    {
+        SaveData data = SaveSystem.Load();
+
+        /* 1) Daha önce aktifleştirilen dekorasyonları sahnede bulup aç */
+        Transform[] allTransforms = planetTargetParent.GetComponentsInChildren<Transform>(true);
+        foreach (string objName in data.activeObjects)
+        {
+            foreach (Transform t in allTransforms)
+            {
+                if (t.name == objName)
+                {
+                    t.gameObject.SetActive(true);
+                    break;
+                }
+            }
+        }
+
+        /* 2) Önceden listeden çıkarılmış (removed) öğeleri UI listenden sil */
+        spawnedItems.RemoveAll(item =>
+        {
+            bool removed = data.removedItems.Contains(item.name);
+            if (removed) Destroy(item);
+            return removed;
+        });
     }
 
     private void RemoveItemFromList(string childName)
     {
-        GameObject itemToRemove = spawnedItems.Find(item => item.name == childName);
-        if (itemToRemove != null)
-        {
-            spawnedItems.Remove(itemToRemove);
-            Destroy(itemToRemove);
-            Debug.Log(childName + " listeden tamamen silindi.");
+        GameObject uiItem = spawnedItems.Find(go => go.name == childName);
+        if (uiItem == null) return;
 
-            // 🌟 Silinen öğeyi kaydet
-            if (!saveData.removedItems.Contains(childName))
-            {
-                saveData.removedItems.Add(childName);
-                SaveData();  // Veriyi güncelledikten sonra kaydet
-            }
-        }
+        spawnedItems.Remove(uiItem);
+        Destroy(uiItem);
+
+        SaveSystem.AddRemovedItem(childName);   // KAYIT
     }
 
+    /*──────────────────────────── U I   Y A R D I M C I L A R ─────────────────────────*/
+    private void UpdatePopulationText(int pop)
+    {
+        if (populationText) populationText.text = $"Population: {pop}";
+    }
+
+    private void ShowWarning(string msg)
+    {
+        if (!warningText) return;
+        warningText.text = msg;
+        warningText.gameObject.SetActive(true);
+        Invoke(nameof(HideWarning), 2f);
+    }
+    private void HideWarning() => warningText?.gameObject.SetActive(false);
+
+    private void ClearSpawnedItems()
+    {
+        foreach (var go in spawnedItems) Destroy(go);
+        spawnedItems.Clear();
+    }
+
+    /*───────────────────────────────── U I  N A V I ──────────────────────────────────*/
+    public void LoadScene() => SceneManager.LoadSceneAsync(1);
 
 #if UNITY_EDITOR
     [ContextMenu("🗑️ Delete Save Data")]
-    public void DeleteSaveData()
+    private void DeleteSaveData()
     {
-        if (File.Exists(saveFilePath))
+        string path = System.IO.Path.Combine(Application.persistentDataPath, "saveData.json");
+        if (System.IO.File.Exists(path))
         {
-            File.Delete(saveFilePath);
-            Debug.Log("Save data deleted: " + saveFilePath);
+            System.IO.File.Delete(path);
+            Debug.Log("Save data deleted: " + path);
             EditorUtility.DisplayDialog("Save Data Manager", "Save data deleted successfully!", "OK");
         }
         else
-        {
             Debug.LogWarning("No save data found to delete.");
-        }
     }
 #endif
 }

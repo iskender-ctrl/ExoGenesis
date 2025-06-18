@@ -43,28 +43,37 @@ public class PlayGamesFirebaseAuth : MonoBehaviour
     {
         Debug.Log("🚀 Sahne yükleme süreci başlıyor...");
 
-        yield return new WaitForSeconds(1f); // Başlangıçta kısa bir bekleme
+        yield return new WaitForSeconds(0.5f); // Başlangıçta bekleme
 
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(targetScene);
-        asyncLoad.allowSceneActivation = false; // Sahnenin otomatik geçişini engelle
+        asyncLoad.allowSceneActivation = false;
 
-        float progress = 0f;
+        float loadingTime = 3f; // Slider en az bu süre boyunca dönecek
+        float elapsedTime = 0f;
 
+        float fakeFill = 0f;
+
+        while (elapsedTime < loadingTime)
+        {
+            elapsedTime += Time.deltaTime;
+            fakeFill += Time.deltaTime * 1.5f; // Ne kadar hızlı dönsün? 1.5 => 1.5 saniyede bir tur
+            loadingBar.fillAmount = fakeFill % 1f;
+            yield return null;
+        }
+
+        // Gerçek sahne yükleme ilerlemesine geç
+        float realProgress = 0f;
         while (!asyncLoad.isDone)
         {
-            // AsyncOperation'un ilerlemesini al
             float targetProgress = Mathf.Clamp01(asyncLoad.progress / 0.9f);
+            realProgress = Mathf.MoveTowards(realProgress, targetProgress, Time.deltaTime);
+            loadingBar.fillAmount = realProgress;
 
-            // Dolum çubuğunu yumuşak bir şekilde güncelle
-            progress = Mathf.MoveTowards(progress, targetProgress, Time.deltaTime);
-            loadingBar.fillAmount = progress;
-
-            // Yüzde 90'ı geçtiğinde dolum çubuğunu tam doldur ve sahneyi aktive et
-            if (progress >= 0.99f)
+            if (realProgress >= 0.99f)
             {
                 loadingBar.fillAmount = 1f;
-                yield return new WaitForSeconds(0.5f); // Tam dolduktan sonra kısa bir bekleme
-                asyncLoad.allowSceneActivation = true; // Sahneyi aktive et
+                yield return new WaitForSeconds(0.5f);
+                asyncLoad.allowSceneActivation = true;
             }
 
             yield return null;

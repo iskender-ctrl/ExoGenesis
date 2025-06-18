@@ -26,7 +26,7 @@ MonoBehaviour:
     prefab: {fileID: 6286559184371221999, guid: a3ad225dce59b9f4a97a1190303c52fa, type: 3}
     orbitAround: 
     isTarget: 0
-    maxPopulation: 50
+    maxPopulation: 100
   - bodyName: planet3
     mass: 200
     rotationSpeed: 40

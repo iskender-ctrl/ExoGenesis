@@ -9,69 +9,102 @@ public class InventoryUI : MonoBehaviour
     public Transform collectionContainer;
     public GameObject itemPrefab;
     public RocketData rocketData;
-    private string selectedRocket; // Seçilen roketin ismini saklar
+    public PopupManager popupManager;
+    public Transform popupUI;
+    public TextMeshProUGUI popupTitle;
+    public Button popupSelectButton;
+    private string selectedRocket;
+    public string defaultRocketName;
 
     private void Start()
     {
-        LoadInventory();
-        LoadSelectedRocket();
-    }
+        var defaultRocket = rocketData.DefaultRocket;
 
+        // Default roket envantere ekli değilse ekle
+        if (!InventoryManager.Instance.HasRocket(defaultRocketName))
+        {
+            InventoryManager.Instance.AddRocket(defaultRocketName);
+        }
+
+        LoadSelectedRocket();
+
+        // Seçili roket yoksa defaultu seç
+        if (string.IsNullOrEmpty(selectedRocket))
+        {
+            selectedRocket = defaultRocketName;
+            PlayerPrefs.SetString("SelectedRocket", selectedRocket);
+            PlayerPrefs.Save();
+        }
+
+        LoadInventory();
+    }
     public void LoadInventory()
     {
         foreach (Transform child in rocketContainer) Destroy(child.gameObject);
         foreach (Transform child in collectionContainer) Destroy(child.gameObject);
 
-        List<string> rockets = InventoryManager.Instance.GetRockets();
-        List<string> collections = InventoryManager.Instance.GetCollectionItems();
-
-        foreach (string rocket in rockets)
+        // Envanterde tüm roketleri göster, rocketData.rockets içindeki tüm roketler
+        foreach (var rocketInfo in rocketData.rockets)
         {
-            RocketData.Rocket rocketInfo = rocketData.rockets.Find(r => r.rocketName == rocket);
+            GameObject newItem = Instantiate(itemPrefab, rocketContainer);
+            newItem.transform.Find("RocketName").GetComponent<TextMeshProUGUI>().text = rocketInfo.rocketName;
+            newItem.transform.Find("RocketIcon").GetComponent<Image>().sprite = rocketInfo.icon;
 
-            if (rocketInfo != null)
+            Button btn = newItem.GetComponent<Button>();
+
+            // Roket satın alınmış mı?
+            bool hasRocket = InventoryManager.Instance.HasRocket(rocketInfo.rocketName);
+
+            btn.interactable = hasRocket;
+
+            btn.onClick.AddListener(() =>
             {
-                GameObject newItem = Instantiate(itemPrefab, rocketContainer);
-                newItem.transform.Find("RocketName").GetComponent<TextMeshProUGUI>().text = rocketInfo.rocketName;
-                newItem.transform.Find("RocketIcon").GetComponent<Image>().sprite = rocketInfo.icon;
+                if (!btn.interactable)
+                    return; // Satın alınmamış rokete tıklanmasın
 
-                // 🔹 "Use" Butonuna eriş ve fonksiyon bağla
-                Button useButton = newItem.transform.Find("UseButton").GetComponent<Button>();
-                useButton.onClick.AddListener(() => SelectRocket(rocketInfo.rocketName, newItem));
-                
-                // 🔹 Seçili roketi vurgula
-                if (rocketInfo.rocketName == selectedRocket)
-                {
-                    HighlightSelectedRocket(newItem);
-                }
+                popupTitle.text = rocketInfo.rocketName;
+                popupSelectButton.onClick.RemoveAllListeners();
+                popupSelectButton.onClick.AddListener(() => SelectRocket(rocketInfo.rocketName, newItem));
+                popupManager.OpenPopup(popupUI);
+            });
+
+            // Seçili roketi vurgula
+            if (rocketInfo.rocketName == selectedRocket)
+            {
+                HighlightSelectedRocket(newItem);
+            }
+            else
+            {
+                ResetRocketUI(newItem);
             }
         }
 
-        foreach (string item in collections)
-        {
-            GameObject newItem = Instantiate(itemPrefab, collectionContainer);
-            newItem.GetComponentInChildren<TextMeshProUGUI>().text = item;
-        }
+        // Koleksiyon itemlarınız varsa onları da ekleyebilirsiniz
     }
 
     private void SelectRocket(string rocketName, GameObject selectedItem)
     {
-        // 🔹 Seçili roketi kaydet
         PlayerPrefs.SetString("SelectedRocket", rocketName);
         PlayerPrefs.Save();
 
         selectedRocket = rocketName;
-
         Debug.Log("🚀 Seçilen Roket: " + rocketName);
 
-        // 🔹 Tüm roketleri resetle
         foreach (Transform child in rocketContainer)
         {
+            Button btn = child.GetComponent<Button>();
+            if (btn != null)
+                btn.interactable = false;  // Önce hepsi pasif
             ResetRocketUI(child.gameObject);
         }
 
-        // 🔹 Seçilen roketi vurgula
+        // Sadece seçileni aktif yap ve vurgula
+        Button selectedBtn = selectedItem.GetComponent<Button>();
+        if (selectedBtn != null)
+            selectedBtn.interactable = true;
+
         HighlightSelectedRocket(selectedItem);
+        popupManager.ClosePopup(popupUI);
     }
 
     private void LoadSelectedRocket()
@@ -81,11 +114,11 @@ public class InventoryUI : MonoBehaviour
 
     private void HighlightSelectedRocket(GameObject rocketItem)
     {
-        rocketItem.GetComponent<Image>().color = Color.green; // Vurgulamak için yeşil yap
+        rocketItem.GetComponent<Image>().color = Color.green;
     }
 
     private void ResetRocketUI(GameObject rocketItem)
     {
-        rocketItem.GetComponent<Image>().color = Color.white; // Varsayılan beyaz
+        rocketItem.GetComponent<Image>().color = Color.white;
     }
 }

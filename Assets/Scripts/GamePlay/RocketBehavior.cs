@@ -10,6 +10,7 @@ public class RocketBehavior : MonoBehaviour
     private RocketLanding rocketLanding;
     private float offScreenTimer = 0f;                 // NEW
     private const float offScreenThreshold = 2f;       // NEW
+
     void Start()
     {
         rocketRigidbody = GetComponent<Rigidbody>();

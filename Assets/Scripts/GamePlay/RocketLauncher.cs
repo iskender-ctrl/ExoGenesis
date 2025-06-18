@@ -3,7 +3,6 @@ using UnityEngine;
 public class RocketLauncher : MonoBehaviour
 {
     [Header("Roket Ayarları")]
-    public GameObject rocketPrefab;
     public Transform spawnPoint;
     public float launchSpeed = 20f;
     public float rocketLifetime = 10f;
@@ -14,16 +13,32 @@ public class RocketLauncher : MonoBehaviour
     public Material dashedLineMaterial;
     public float lineMaxLength = 50f;
 
+    [Header("Dönme Ayarları")]
+    [SerializeField] private Transform rotatingPlatform; // Roketin bağlı olduğu platform (gezegen)
+    [SerializeField] private float rotationSpeed = 5f;
+
+    private Quaternion targetRotation = Quaternion.identity;
+
     private Camera mainCamera;
     private bool isTouching = false;
     private bool inputResetRequired = false;
 
+    private GameObject currentRocket; // 🔹 Aktif roket
     public static bool IsPanelOpen = false;
+    public static RocketLauncher Instance { get; private set; } // Singleton
+
+    [Header("Roket Respawn Ayarı")]
+    [SerializeField] private float respawnDelay = 1.5f;
+    void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {
         mainCamera = Camera.main;
         InitializeGuideLine();
+        SpawnRocket(); // 🎯 İlk roket sahneye yerleştirilir
     }
 
     void Update()
@@ -32,20 +47,20 @@ public class RocketLauncher : MonoBehaviour
         {
             isTouching = false;
             guideLine.enabled = false;
-            return; // Panel açıksa hiçbir şey yapma
+            return;
         }
 
         if (inputResetRequired)
         {
             if (!Input.GetMouseButton(0) && Input.touchCount == 0)
-            {
-                inputResetRequired = false; // mouse bırakıldı
-            }
-            return; // reset bitene kadar bekle
+                inputResetRequired = false;
+
+            return;
         }
 
         HandleInput();
         UpdateGuideLine();
+        UpdateRotation();
     }
 
     private void InitializeGuideLine()
@@ -75,7 +90,7 @@ public class RocketLauncher : MonoBehaviour
 
             if (fuelSystem.HasFuel())
             {
-                FireRocket();
+                LaunchRocket(); // 🚀 Fırlat
             }
             else
             {
@@ -88,7 +103,7 @@ public class RocketLauncher : MonoBehaviour
 
     private void UpdateGuideLine()
     {
-        if (!isTouching || IsPanelOpen)
+        if (!isTouching || IsPanelOpen || currentRocket == null)
         {
             guideLine.enabled = false;
             return;
@@ -99,6 +114,31 @@ public class RocketLauncher : MonoBehaviour
 
         guideLine.SetPosition(0, spawnPoint.position);
         guideLine.SetPosition(1, spawnPoint.position + launchDirection * lineMaxLength);
+
+        targetRotation = Quaternion.LookRotation(launchDirection);
+    }
+
+    private void UpdateRotation()
+    {
+        if (!isTouching) return;
+
+        if (currentRocket != null)
+        {
+            currentRocket.transform.rotation = Quaternion.Lerp(
+                currentRocket.transform.rotation,
+                targetRotation,
+                Time.deltaTime * rotationSpeed
+            );
+        }
+
+        if (rotatingPlatform != null)
+        {
+            rotatingPlatform.rotation = Quaternion.Lerp(
+                rotatingPlatform.rotation,
+                targetRotation,
+                Time.deltaTime * rotationSpeed
+            );
+        }
     }
 
     private Vector3 GetTouchOrMousePosition()
@@ -119,18 +159,41 @@ public class RocketLauncher : MonoBehaviour
         return spawnPoint.position + spawnPoint.forward * 10f;
     }
 
-    private void FireRocket()
+    public void SpawnRocket()
     {
-        // ► (1) Her yeni roket öncesi shot-state reset
-        LevelManager.Instance?.ResetShotState();          // NEW
+        if (currentRocket != null)
+            Destroy(currentRocket);
+
+        string selectedRocket = PlayerPrefs.GetString("SelectedRocket", "DefaultRocket");
+        GameObject prefab = Resources.Load<GameObject>($"Rockets/{selectedRocket}");
+
+        if (prefab == null)
+        {
+            Debug.LogError($"🚫 Prefab bulunamadı: Rockets/{selectedRocket}");
+            return;
+        }
+
+        currentRocket = Instantiate(prefab, spawnPoint.position, transform.rotation);
+    }
+
+    private void LaunchRocket()
+    {
+        if (currentRocket == null)
+        {
+            Debug.LogWarning("🚫 Fırlatılacak roket yok.");
+            return;
+        }
+        currentRocket.GetComponent<RocketLanding>().particle.SetActive(true);
+        LevelManager.Instance?.ResetShotState();
+
         Vector3 targetPos = GetTouchOrMousePosition();
         Vector3 direction = (targetPos - spawnPoint.position).normalized;
 
-        GameObject rocket = Instantiate(rocketPrefab, spawnPoint.position, Quaternion.LookRotation(direction));
-        Rigidbody rb = rocket.GetComponent<Rigidbody>();
+        Rigidbody rb = currentRocket.GetComponent<Rigidbody>();
         if (rb != null)
             rb.linearVelocity = direction * launchSpeed;
 
-        Destroy(rocket, rocketLifetime);
+        Destroy(currentRocket, rocketLifetime);
+        currentRocket = null;
     }
 }

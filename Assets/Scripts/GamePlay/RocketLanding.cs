@@ -15,6 +15,8 @@ public class RocketLanding : MonoBehaviour
     private float currentAngle = 0f; // Güncel açı değeri (getter için)
     private bool speedForced = false;
     private float planetRadius; // Gezegenin yarıçapı
+    public GameObject particle;
+
     private void Start()
     {
         rocketCollider = GetComponent<BoxCollider>(); // Roketin box collider bileşeni
@@ -36,6 +38,7 @@ public class RocketLanding : MonoBehaviour
 
     private void FixedUpdate()
     {
+
         if (isLandingActive && currentPlanetTransform != null)
         {
             ApplyRocketLanding(currentPlanetTransform, currentGravityFieldRadius);
@@ -116,9 +119,9 @@ public class RocketLanding : MonoBehaviour
         }
         if (angle < 1f)
         {
-            normalVelocity += -normalVector/2 * Time.deltaTime;
+            normalVelocity += -normalVector / 2 * Time.deltaTime;
         }
-       
+
         // --- 12. Hızı güncelle
         rocketRigidbody.linearVelocity = normalVelocity + tangentVelocity;
     }

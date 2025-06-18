@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine.UI;
+using TMPro;
 
 public class LevelManager : MonoBehaviour
 {
@@ -19,6 +20,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private Button mainMenuButton;
     [SerializeField] private Button tryAgainButton;
     [SerializeField] private FuelSystem fuelSystem;
+    [SerializeField] private TextMeshProUGUI statusText; // ← YENİ: Başarı/başarısız yazısı
 
     private bool _panelReachedTarget = false;
     private bool _alreadyScored = false;
@@ -49,8 +51,7 @@ public class LevelManager : MonoBehaviour
 
         foreach (var planet in planetDatabase.planets)
         {
-            int currentPopulation = LoadPlanetPopulation(planet.planetName, planet.defaultPopulation);
-            planet.currentPopulation = currentPopulation;
+            planet.currentPopulation = SaveSystem.GetPopulation(planet.planetName, planet.defaultPopulation);
         }
     }
     // (1) ► YENİ: her roket atışında durum bayraklarını sıfırlamak için
@@ -95,9 +96,13 @@ public class LevelManager : MonoBehaviour
     {
         if (_panelReachedTarget || _alreadyScored) return;
         _alreadyScored = true;                        // aynı roket için tekrar sayma
-        // **Panel açılmaz** – yakıt bitince OnFuelDepleted() halledecek
+                                                      // **Panel açılmaz** – yakıt bitince OnFuelDepleted() halledecek
+        Invoke(nameof(RespawnRocket), delay + 0.5f);
     }
-
+    private void RespawnRocket()
+    {
+        RocketLauncher.Instance?.SpawnRocket();
+    }
 
     private void ShowSuccessPanel(bool reachedTarget, float delay)
     {
@@ -110,6 +115,12 @@ public class LevelManager : MonoBehaviour
         _panelReachedTarget = reachedTarget;
         CancelInvoke(nameof(DelayedShowSuccessPanel));
         Invoke(nameof(DelayedShowSuccessPanel), delay);
+
+        if (statusText != null)
+        {
+            statusText.text = reachedTarget ? "Level Completed" : "Level Failed";
+            statusText.color = reachedTarget ? Color.green : Color.red; // İsteğe bağlı
+        }
 
         continueButton.onClick.RemoveAllListeners();
         tryAgainButton.onClick.RemoveAllListeners();
@@ -126,19 +137,42 @@ public class LevelManager : MonoBehaviour
 
     private void DelayedShowSuccessPanel()
     {
-        RocketLauncher.IsPanelOpen = true;
-        successPanel.SetActive(true);
+        AdManager.Instance.ShowInterstitial(() =>
+        {
+            RocketLauncher.IsPanelOpen = true;
+            successPanel.SetActive(true);
+            spawnParent.gameObject.SetActive(false);
+        });
     }
+
 
     private void OnTryAgain()
     {
-        if (fuelSystem != null)
-            fuelSystem.AddFuel(1);
+        if (fuelSystem != null && fuelSystem.CurrentFuel <= 0f)
+        {
+            Debug.Log("⛽ Yakıt yok, reklam izletilecek...");
 
+            AdManager.Instance.ShowRewardedForFuel(() =>
+            {
+                fuelSystem.AddFuel(1); // Reklam izleyince 1 yakıt
+                RestartLevel();        // Sahneyi yeniden başlat
+            });
+
+            return;
+        }
+
+        fuelSystem.AddFuel(1); // Normalde zaten 1 yakıt veriyorduk
+        RestartLevel();
+    }
+    private void RestartLevel()
+    {
         successPanel.SetActive(false);
+        spawnParent.gameObject.SetActive(true);
         RocketLauncher.IsPanelOpen = false;
         _panelReachedTarget = false;
         _alreadyScored = false;
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void OnFuelDepleted()
@@ -187,7 +221,6 @@ public class LevelManager : MonoBehaviour
                 {
                     Vector3 position = new Vector3(planet.position[0], planet.position[1], planet.position[2]);
                     GameObject newPlanet = Instantiate(prefab, position, Quaternion.identity, spawnParent);
-                    //celestialBodyManager.celestialObjects.Add(newPlanet);
                     newPlanet.name = prefab.name;
                     newPlanet.transform.localScale = Vector3.one * planet.scale;
 
@@ -198,6 +231,19 @@ public class LevelManager : MonoBehaviour
                     {
                         int savedPopulation = LoadPlanetPopulation(planetData.planetName, planetData.defaultPopulation);
                         planetData.currentPopulation = savedPopulation;
+                    }
+
+                    // Burada orbitAround ekleniyor
+                    var celestial = celestialBodyData.celestialBodies.Find(b => b.bodyName == planet.name);
+                    if (celestial != null)
+                    {
+                        celestial.orbitAround = planet.orbitAround;
+                    }
+                    if (levelData.gravitySettings != null)
+                    {
+                        GravitySettings.Instance.gravitationalConstant = levelData.gravitySettings.gravitationalConstant;
+                        GravitySettings.Instance.radiusMultiplier = levelData.gravitySettings.radiusMultiplier;
+                        GravitySettings.Instance.orbitalSpeedMultiplier = levelData.gravitySettings.orbitalSpeedMultiplier;
                     }
 
                     if (planet.name == levelData.targetPlanet)
@@ -240,17 +286,14 @@ public class LevelManager : MonoBehaviour
 
     public void IncreasePlanetPopulation(string planetName, int amount)
     {
-        int currentPopulation = LoadPlanetPopulation(planetName, 0);
-        int newPopulation = currentPopulation + amount;
-        SavePlanetPopulation(planetName, newPopulation);
+        int newPop = SaveSystem.GetPopulation(planetName) + amount;
+        SaveSystem.SetPopulation(planetName, newPop);
 
-        var updated = planetDatabase.planets.Find(p => p.planetName == planetName);
-        if (updated != null)
-            updated.currentPopulation = newPopulation;
+        var p = planetDatabase.planets.Find(pl => pl.planetName == planetName);
+        if (p != null) p.currentPopulation = newPop;
 
-        Debug.Log($"📈 {planetName} nüfusu artırıldı! Yeni nüfus: {newPopulation}");
+        Debug.Log($"📈 {planetName} yeni nüfus: {newPop}");
     }
-
     void SaveDataToFile(SaveData data)
     {
         string json = JsonUtility.ToJson(data, true);

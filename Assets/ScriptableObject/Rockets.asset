@@ -14,5 +14,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rockets:
   - rocketName: XWeeng
+    payment: 0
     price: 20
+    iapProductId: 
     icon: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+    isDefault: 1
+  - rocketName: Mustafa
+    payment: 0
+    price: 20
+    iapProductId: 
+    icon: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+    isDefault: 0
+  - rocketName: "\u0130skender"
+    payment: 1
+    price: 20
+    iapProductId: rocketisko
+    icon: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+    isDefault: 0
+  - rocketName: Nedim
+    payment: 0
+    price: 20
+    iapProductId: 
+    icon: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+    isDefault: 0
+  - rocketName: "Do\u011Fan"
+    payment: 0
+    price: 20
+    iapProductId: 
+    icon: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+    isDefault: 0
+  - rocketName: Nigar
+    payment: 0
+    price: 20
+    iapProductId: 
+    icon: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+    isDefault: 0

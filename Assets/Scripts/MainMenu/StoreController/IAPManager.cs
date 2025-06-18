@@ -70,7 +70,7 @@ public class IAPManager : MonoBehaviour, IStoreListener
     // **GÜNCELLENEN METOT** (2 parametre alıyor artık)
     public void OnInitializeFailed(InitializationFailureReason error, string message)
     {
-//        Debug.LogError($"IAP Başlatılamadı: {error} - {message}");
+        //        Debug.LogError($"IAP Başlatılamadı: {error} - {message}");
     }
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
@@ -87,5 +87,10 @@ public class IAPManager : MonoBehaviour, IStoreListener
     public void OnInitializeFailed(InitializationFailureReason error)
     {
         throw new System.NotImplementedException();
+    }
+    public void BuyProduct(string productId, System.Action onSuccess, System.Action onFail)
+    {
+        Debug.Log($"[IAP-Stub] Satın alma simüle edildi: {productId}");
+        onSuccess?.Invoke();   // daima başarı
     }
 }

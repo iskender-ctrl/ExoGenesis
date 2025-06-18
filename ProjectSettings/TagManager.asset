@@ -8,6 +8,8 @@ TagManager:
   - GravityField
   - Target
   - TargetField
+  - MapPlanetPanel
+  - DecorationFill
   layers:
   - Default
   - TransparentFX

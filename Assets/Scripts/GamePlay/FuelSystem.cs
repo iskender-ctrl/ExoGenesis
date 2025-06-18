@@ -1,43 +1,76 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+using DG.Tweening;
 
 public class FuelSystem : MonoBehaviour
 {
+    [Header("UI References")]
     [SerializeField] private Image fuelBar;
-    [SerializeField] private int maxFuel = 50; // 🔧 Inspector'dan ayarlanabilir hale getirildi
-    public System.Action OnFuelDepleted;
+    [SerializeField] private TextMeshProUGUI fuelText; // Yüzdelik gösterim
 
-    private int currentFuel;
+    [Header("Settings")]
+    [SerializeField] private int maxFuel = 5;
+    public System.Action OnFuelDepleted;
+    public float CurrentFuel => PlayerDataManager.GetFuel();
+
+    public static FuelSystem Instance { get; private set; }
+
+    private void Awake()
+    {
+        // Singleton & DontDestroyOnLoad
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     void Start()
     {
-        currentFuel = maxFuel;
-        UpdateFuelBar();
+        UpdateFuelBar(immediate: true); // Başlangıçta hızlı yüklensin
     }
 
-    public void UseFuel()
+    public void UseFuel(float amount = 1f)
     {
-        if (currentFuel > 0)
+        if (PlayerDataManager.GetFuel() > 0f)
         {
-            currentFuel--;
+            PlayerDataManager.UseFuel(amount);
             UpdateFuelBar();
         }
     }
 
-    public void AddFuel(int amount = 1)
+    public void AddFuel(float amount = 1f)
     {
-        currentFuel += amount;
-        if (currentFuel > maxFuel)
-            currentFuel = maxFuel;
-
+        PlayerDataManager.AddFuel(amount);
         UpdateFuelBar();
     }
 
-    private void UpdateFuelBar()
+    private void UpdateFuelBar(bool immediate = false)
     {
-        fuelBar.fillAmount = (float)currentFuel / maxFuel;
+        float current = PlayerDataManager.GetFuel();
+        float targetFill = current / maxFuel;
 
-        if (currentFuel <= 0)
+        if (immediate)
+        {
+            fuelBar.fillAmount = targetFill;
+        }
+        else
+        {
+            fuelBar.DOFillAmount(targetFill, 0.3f).SetEase(Ease.OutCubic);
+        }
+
+        if (fuelText)
+        {
+            int percent = Mathf.RoundToInt(targetFill * 100f);
+            fuelText.text = "%" + percent;
+        }
+
+        if (current <= 0)
         {
             OnFuelDepleted?.Invoke();
         }
@@ -45,6 +78,6 @@ public class FuelSystem : MonoBehaviour
 
     public bool HasFuel()
     {
-        return currentFuel > 0;
+        return PlayerDataManager.GetFuel() > 0f;
     }
 }

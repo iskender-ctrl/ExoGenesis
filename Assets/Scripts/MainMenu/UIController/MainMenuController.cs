@@ -80,6 +80,9 @@ public class MainMenuController : MonoBehaviour
 
     private void UpdateFuelUI(float fuel)
     {
-        fuelText.text = fuel.ToString("F1");
+        float maxFuel = 5f; // FuelSystem içinde de bu kullanılıyor
+        int percent = Mathf.RoundToInt((fuel / maxFuel) * 100f);
+        fuelText.text = fuel.ToString("F1"); 
+        //fuelText.text = "%" + percent;
     }
 }
