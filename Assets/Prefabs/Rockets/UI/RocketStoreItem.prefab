@@ -135,7 +135,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b79b5624d944058bd39aad2b90fb275, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  productId: buy10fuel200coin
+  productId: rocketsisko
   buttonType: 0
   consumePurchase: 1
   onTransactionsRestored:
@@ -150,7 +150,7 @@ MonoBehaviour:
   onProductFetched:
     m_PersistentCalls:
       m_Calls: []
-  button: {fileID: 0}
+  button: {fileID: 5121802771243265402}
 --- !u!1 &425314712780168780
 GameObject:
   m_ObjectHideFlags: 0

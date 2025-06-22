@@ -10,7 +10,7 @@ public class PlanetEvolutionManager : MonoBehaviour
 {
     /* ───────────── UI ───────────── */
     [Header("UI (Inspector’dan atayabilir ya da Tag ile bulunur)")]
-    [SerializeField] private Image           lifeProgressFill;   // Bar
+    [SerializeField] private Image lifeProgressFill;   // Bar
     [SerializeField] private TextMeshProUGUI lifeProgressText;   // % metin
 
     /* ───────────── Data ─────────── */
@@ -33,13 +33,13 @@ public class PlanetEvolutionManager : MonoBehaviour
 
     private void Start() => RefreshUI();   // Sahne açıldığında bir kez
     private void Update()
-{
-    if (SaveSystem.DataDirty)
     {
-        SaveSystem.ClearDirty(); // Flag sıfırla
-        RefreshUI();             // UI güncelle
+        if (SaveSystem.DataDirty)
+        {
+            SaveSystem.ClearDirty(); // Flag sıfırla
+            RefreshUI();             // UI güncelle
+        }
     }
-}
 
 
     /*────────────── U I  G Ü N C E L L E ─────────────*/
@@ -74,7 +74,7 @@ public class PlanetEvolutionManager : MonoBehaviour
         if (lifeProgressText) lifeProgressText.text = Mathf.RoundToInt(score * 100f) + "%";
 
         /* 4) Gezegenin görsel evrimini uygula (varsa) */
-        if (planetVisualRoot && PlanetLifeProgressManager.Instance)
-            PlanetLifeProgressManager.Instance.ApplyVisuals(pData.planetName, planetVisualRoot);
+        /*if (planetVisualRoot && PlanetLifeProgressManager.Instance)
+            PlanetLifeProgressManager.Instance.ApplyVisuals(pData.planetName, planetVisualRoot);*/
     }
 }

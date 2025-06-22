@@ -14,6 +14,8 @@ public class LevelManager : MonoBehaviour
     private string saveFilePath;
     public Transform spawnParent;
     public CelestialBodyManager celestialBodyManager;
+    [SerializeField] PopupManager popupManager;
+
     [Header("UI")]
     [SerializeField] private GameObject successPanel;
     [SerializeField] private Button continueButton;
@@ -21,6 +23,8 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private Button tryAgainButton;
     [SerializeField] private FuelSystem fuelSystem;
     [SerializeField] private TextMeshProUGUI statusText; // ← YENİ: Başarı/başarısız yazısı
+    [SerializeField] private TextMeshProUGUI planetNameText; // ← YENİ: Başarı/başarısız yazısı
+    [SerializeField] private TextMeshProUGUI populationText;
 
     private bool _panelReachedTarget = false;
     private bool _alreadyScored = false;
@@ -53,7 +57,18 @@ public class LevelManager : MonoBehaviour
         {
             planet.currentPopulation = SaveSystem.GetPopulation(planet.planetName, planet.defaultPopulation);
         }
+
+        // ⬇⬇⬇  START SONUNDA GÜNCEL HEDEF GEZEGENİ YAZDIR ⬇⬇⬇
+
+        string targetPlanetName = GetCurrentPlanetName();
+        if (!string.IsNullOrEmpty(targetPlanetName))
+        {
+            planetNameText.text = targetPlanetName;
+            int pop = SaveSystem.GetPopulation(targetPlanetName, 0);
+            populationText.text = pop.ToString();
+        }
     }
+
     // (1) ► YENİ: her roket atışında durum bayraklarını sıfırlamak için
     public void ResetShotState()                      // NEW
     {
@@ -129,22 +144,43 @@ public class LevelManager : MonoBehaviour
         continueButton.gameObject.SetActive(reachedTarget);
         tryAgainButton.gameObject.SetActive(!reachedTarget);
 
-        continueButton.onClick.AddListener(LoadNextLevel);
+        continueButton.onClick.AddListener(() => OnContinueClicked());
+        mainMenuButton.onClick.AddListener(() => OnMainMenuClicked()); ;
         tryAgainButton.onClick.AddListener(OnTryAgain);
-        mainMenuButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
-
     }
-
-    private void DelayedShowSuccessPanel()
+    private void OnContinueClicked()
     {
+        // Butonları geçici disable et (çift tıklama engeli)
+        continueButton.interactable = false;
+        mainMenuButton.interactable = false;
+
         AdManager.Instance.ShowInterstitial(() =>
         {
-            RocketLauncher.IsPanelOpen = true;
-            successPanel.SetActive(true);
-            spawnParent.gameObject.SetActive(false);
+            continueButton.interactable = true;
+            mainMenuButton.interactable = true;
+            LoadNextLevel(); // Devam et
         });
     }
 
+    private void OnMainMenuClicked()
+    {
+        continueButton.interactable = false;
+        mainMenuButton.interactable = false;
+
+        AdManager.Instance.ShowInterstitial(() =>
+        {
+            continueButton.interactable = true;
+            mainMenuButton.interactable = true;
+            SceneManager.LoadScene("MainMenu"); // Ana menüye dön
+        });
+    }
+    private void DelayedShowSuccessPanel()
+    {
+        // Artık reklam yok!
+        RocketLauncher.IsPanelOpen = true;
+        popupManager.OpenPopup(successPanel.transform);
+        spawnParent.gameObject.SetActive(false);
+    }
 
     private void OnTryAgain()
     {
@@ -223,8 +259,8 @@ public class LevelManager : MonoBehaviour
                     GameObject newPlanet = Instantiate(prefab, position, Quaternion.identity, spawnParent);
                     newPlanet.name = prefab.name;
                     newPlanet.transform.localScale = Vector3.one * planet.scale;
-
                     newPlanet.tag = planet.name == levelData.targetPlanet ? "Target" : "CelestialBody";
+                    planetNameText.text = newPlanet.name;
 
                     var planetData = planetDatabase.planets.Find(p => p.planetName == planet.name);
                     if (planetData != null)
@@ -293,6 +329,7 @@ public class LevelManager : MonoBehaviour
         if (p != null) p.currentPopulation = newPop;
 
         Debug.Log($"📈 {planetName} yeni nüfus: {newPop}");
+        populationText.text = newPop.ToString();
     }
     void SaveDataToFile(SaveData data)
     {

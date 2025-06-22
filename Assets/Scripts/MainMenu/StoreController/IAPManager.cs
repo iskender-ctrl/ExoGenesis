@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Purchasing;
 using System.Collections.Generic;
+using System;
 
 public class IAPManager : MonoBehaviour, IStoreListener
 {
@@ -10,7 +11,7 @@ public class IAPManager : MonoBehaviour, IStoreListener
     private static IExtensionProvider storeExtensionProvider;
 
     public List<string> productIds; // IAP Catalog’daki ürün ID'leri
-
+    public event Action<string> OnRocketPurchased;
     private void Awake()
     {
         if (Instance == null)
@@ -75,7 +76,49 @@ public class IAPManager : MonoBehaviour, IStoreListener
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
     {
-        Debug.Log($"Satın alma başarılı: {args.purchasedProduct.definition.id}");
+        string productId = args.purchasedProduct.definition.id;
+        switch (productId)
+        {
+            case "removeads":
+                Debug.Log("NO ADS PURCHASE");
+                break;
+            case "buy100coin":
+                GrantCoins(100);
+                break;
+            case "buy200coin":
+                GrantCoins(200);
+                break;
+            case "buy5fuel":
+                GrantFuel(5);
+                break;
+            case "buy10fuel":
+                GrantFuel(10);
+                break;
+            case "buy5fuel100coin":
+                GrantFuel(5);
+                GrantCoins(100);
+                break;
+            case "buy5fuel200coin":
+                GrantFuel(5);
+                GrantCoins(200);
+                break;   // ← BU EKSİKTİ!
+            case "buy10fuel100coin":
+                GrantFuel(10);
+                GrantCoins(100);
+                break;   // ← BU EKSİKTİ!
+            case "buy10fuel200coin":
+                GrantFuel(10);
+                GrantCoins(200);
+                break;
+            case "rocketsisko":
+                GrantRocket("İskender");
+                break;
+            default:
+                Debug.LogWarning($"Bilinmeyen ürün: {productId}");
+                break;
+        }
+
+
         return PurchaseProcessingResult.Complete;
     }
 
@@ -92,5 +135,21 @@ public class IAPManager : MonoBehaviour, IStoreListener
     {
         Debug.Log($"[IAP-Stub] Satın alma simüle edildi: {productId}");
         onSuccess?.Invoke();   // daima başarı
+    }
+    private void GrantFuel(int amount)
+    {
+        PlayerDataManager.AddFuel(amount);
+        Debug.Log($"+{amount} yakıt verildi.");
+    }
+    private void GrantCoins(int amount)
+    {
+        PlayerDataManager.AddCoins(amount);
+        Debug.Log($"+{amount} coin verildi.");
+    }
+    private void GrantRocket(string rocketName)
+    {
+        InventoryManager.Instance.AddRocket(rocketName);
+        Debug.Log($"{rocketName} roketi satın alındı ve envantere eklendi.");
+        OnRocketPurchased?.Invoke(rocketName); // → UI’dan da kaldırmak için ShopManager dinleyecek
     }
 }

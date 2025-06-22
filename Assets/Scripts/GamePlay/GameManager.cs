@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance; // Singleton instance
@@ -36,5 +36,9 @@ public class GameManager : MonoBehaviour
         {
             gravityManager.InitializeGravitySystem();
         }
+    }
+    public void BackToMainMenuScene()
+    {
+        SceneManager.LoadSceneAsync(0);
     }
 }

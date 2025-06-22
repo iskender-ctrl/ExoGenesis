@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,43 +11,42 @@ public class ShopManager : MonoBehaviour
     public InventoryUI inventoryUI;
 
     private string defaultRocketName;
+    private Dictionary<string, GameObject> rocketShopItems = new Dictionary<string, GameObject>();
 
     private void Start()
     {
         defaultRocketName = rocketData.DefaultRocket != null
                             ? rocketData.DefaultRocket.rocketName
                             : "DefaultRocket";
+        IAPManager.Instance.OnRocketPurchased += OnRocketPurchasedHandler;
         PopulateShop();
     }
 
     private void PopulateShop()
-{
-    foreach (var rocket in rocketData.rockets)
     {
-        if (rocket.rocketName == defaultRocketName) continue;
-        if (InventoryManager.Instance.HasRocket(rocket.rocketName)) continue;
+        foreach (var rocket in rocketData.rockets)
+        {
+            if (rocket.rocketName == defaultRocketName) continue;
+            if (InventoryManager.Instance.HasRocket(rocket.rocketName)) continue;
 
-        GameObject item = Instantiate(shopItemPrefab, shopContainer);
+            GameObject item = Instantiate(shopItemPrefab, shopContainer);
 
-        // UI alanları
-        item.transform.Find("RocketName").GetComponent<TextMeshProUGUI>().text = rocket.rocketName;
-        item.transform.GetChild(0).GetComponent<Image>().sprite = rocket.icon;
+            // UI alanları
+            item.transform.Find("RocketName").GetComponent<TextMeshProUGUI>().text = rocket.rocketName;
+            item.transform.GetChild(0).GetComponent<Image>().sprite = rocket.icon;
 
-        // ► StoreItem'ı ayarla; elle assign gerekmez
-        StoreItem storeItem = item.GetComponent<StoreItem>();
-        storeItem.Initialize(rocket);   // rocketInfo set + fiyat güncelle
+            StoreItem storeItem = item.GetComponent<StoreItem>();
+            storeItem.Initialize(rocket);
 
-        // Satın alma butonu
-        Button buyBtn = item.transform.Find("BuyButton").GetComponent<Button>();
-        if (rocket.payment == RocketData.PaymentType.Gold)
-            buyBtn.onClick.AddListener(() => BuyWithGold(rocket, item));
-        else
-            buyBtn.onClick.AddListener(() => BuyWithIAP(rocket, item));
+            Button buyBtn = item.transform.Find("BuyButton").GetComponent<Button>();
+            if (rocket.payment == RocketData.PaymentType.Gold)
+                buyBtn.onClick.AddListener(() => BuyWithGold(rocket, item));
+
+            // DICTIONARY'YE EKLE!
+            rocketShopItems[rocket.rocketName] = item;
+        }
     }
-}
 
-
-    /* ---------- GOLD ---------- */
     private void BuyWithGold(RocketData.Rocket rocket, GameObject shopItem)
     {
         if (PlayerDataManager.GetCoins() >= rocket.price)
@@ -60,22 +60,27 @@ public class ShopManager : MonoBehaviour
         }
     }
 
-    /* ---------- IAP ---------- */
-    private void BuyWithIAP(RocketData.Rocket rocket, GameObject shopItem)
-    {
-        // Burada kendi IAP sisteminizi çağırın:
-        IAPManager.Instance.BuyProduct(rocket.iapProductId,
-            onSuccess: () => GrantRocket(rocket, shopItem),
-            onFail: () => Debug.Log("Satın alma iptal/başarısız"));
-    }
-
-    /* ---------- Ortak ödül verme ---------- */
     private void GrantRocket(RocketData.Rocket rocket, GameObject shopItem)
     {
         InventoryManager.Instance.AddRocket(rocket.rocketName);
         Debug.Log($"{rocket.rocketName} envantere eklendi");
         Destroy(shopItem);
 
+        rocketShopItems.Remove(rocket.rocketName);
+
         if (inventoryUI != null) inventoryUI.LoadInventory();
+    }
+
+    // IAP'den tetiklenen event
+    private void OnRocketPurchasedHandler(string rocketName)
+    {
+        if (rocketShopItems.TryGetValue(rocketName, out var shopItem) && shopItem != null)
+        {
+            Destroy(shopItem);
+            rocketShopItems.Remove(rocketName);
+
+            if (inventoryUI != null)
+                inventoryUI.LoadInventory();
+        }
     }
 }

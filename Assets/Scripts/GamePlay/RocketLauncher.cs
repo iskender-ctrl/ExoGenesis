@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.EventSystems;
 public class RocketLauncher : MonoBehaviour
 {
     [Header("Roket Ayarları")]
@@ -29,6 +29,7 @@ public class RocketLauncher : MonoBehaviour
 
     [Header("Roket Respawn Ayarı")]
     [SerializeField] private float respawnDelay = 1.5f;
+
     void Awake()
     {
         Instance = this;
@@ -73,6 +74,16 @@ public class RocketLauncher : MonoBehaviour
 
     private void HandleInput()
     {
+        bool uiBlocked = false;
+#if UNITY_EDITOR || UNITY_STANDALONE
+        uiBlocked = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+#elif UNITY_ANDROID || UNITY_IOS
+    if (Input.touchCount > 0)
+        uiBlocked = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+#endif
+
+        if (uiBlocked)
+            return;
         if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began))
         {
             if (IsPanelOpen) return;
@@ -164,7 +175,7 @@ public class RocketLauncher : MonoBehaviour
         if (currentRocket != null)
             Destroy(currentRocket);
 
-        string selectedRocket = PlayerPrefs.GetString("SelectedRocket", "DefaultRocket");
+        string selectedRocket = PlayerPrefs.GetString("SelectedRocket", "XWeeng");
         GameObject prefab = Resources.Load<GameObject>($"Rockets/{selectedRocket}");
 
         if (prefab == null)

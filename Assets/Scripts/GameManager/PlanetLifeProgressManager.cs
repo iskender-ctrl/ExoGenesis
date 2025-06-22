@@ -15,7 +15,6 @@ public class PlanetLifeProgressManager : MonoBehaviour
     [System.Serializable] public class PlanetLifeSaveData
     { public List<LifeData> planets = new(); }
 
-    public static PlanetLifeProgressManager Instance { get; private set; }
 
     /* ---------- TWEAKABLE ---------- */
     [Header("Weights / Caps")]
@@ -41,9 +40,6 @@ public class PlanetLifeProgressManager : MonoBehaviour
     /* ---------- LIFE-CYCLE ---------- */
     private void Awake()
     {
-        if (Instance != null) { Destroy(gameObject); return; }
-        Instance = this;
-
         _path = Path.Combine(Application.persistentDataPath, "planet_life.json");
         LoadFile();
         PrepareEmptyPools();

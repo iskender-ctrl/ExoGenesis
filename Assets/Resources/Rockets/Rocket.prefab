@@ -134,9 +134,9 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 0
   m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  m_Interpolate: 2
+  m_Constraints: 80
+  m_CollisionDetection: 2
 --- !u!114 &-2682603198758020809
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -150,7 +150,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   explosionPrefab: {fileID: 114660248727449581, guid: 6813c86c00b28fe4eb0c646e74fd1765, type: 3}
-  speedText: {fileID: 0}
 --- !u!114 &6173530320894378475
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -163,6 +162,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56622270ff00ca046b325101c710199a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  particle: {fileID: 0}
 --- !u!96 &-6076388249864427104
 TrailRenderer:
   serializedVersion: 3

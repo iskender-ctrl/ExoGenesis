@@ -43,10 +43,17 @@ public class StoreItem : MonoBehaviour
 #if UNITY_EDITOR
         priceText.text = "IAP";
 #else
-        var prod = IAPManager.Instance?.GetProductById(rocketInfo.iapProductId);
-        priceText.text = (prod != null && prod.availableToPurchase)
-            ? prod.metadata.localizedPriceString
-            : "Yükleniyor…";
+    var prod = IAPManager.Instance?.GetProductById(rocketInfo.iapProductId);
+    if (prod != null && prod.availableToPurchase)
+    {
+        // Catalog fiyatı ve para birimini göster
+        var localizedPrice = prod.metadata.localizedPriceString;
+        priceText.text = localizedPrice; // Ör: "₺34,99" veya "$0.99"
+    }
+    else
+    {
+        priceText.text = "Yükleniyor…";
+    }
 #endif
     }
 }

@@ -10,7 +10,7 @@ public class FuelSystem : MonoBehaviour
     [SerializeField] private TextMeshProUGUI fuelText; // Yüzdelik gösterim
 
     [Header("Settings")]
-    [SerializeField] private int maxFuel = 5;
+    [SerializeField] private int maxFuel;
     public System.Action OnFuelDepleted;
     public float CurrentFuel => PlayerDataManager.GetFuel();
 
@@ -32,6 +32,7 @@ public class FuelSystem : MonoBehaviour
 
     void Start()
     {
+        maxFuel = (int)PlayerDataManager.GetFuel();
         UpdateFuelBar(immediate: true); // Başlangıçta hızlı yüklensin
     }
 

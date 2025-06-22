@@ -23,6 +23,9 @@ public class DecorationController : MonoBehaviour
     public TextMeshProUGUI warningText;
     public TextMeshProUGUI populationText;
 
+    [Header("Decoration Progress UI")]
+    [SerializeField] private Image decorationProgressFill; // Fillable bar (Image Type: Filled)
+    [SerializeField] private TextMeshProUGUI decorationProgressText;
     [HideInInspector] public static DecorationController Instance;
 
     // Runtime listeleri
@@ -55,6 +58,7 @@ public class DecorationController : MonoBehaviour
         if (backgroundImage && planetData.bG) backgroundImage.sprite = planetData.bG;
 
         UpdatePopulationText(planetData.currentPopulation);
+        UpdateDecorationProgress(planetData.items);
 
         ClearSpawnedItems();
         SpawnItems(planetData.items);
@@ -129,7 +133,7 @@ public class DecorationController : MonoBehaviour
             if (planetBtn) planetBtn.childName = item.decorationName;
 
             TextMeshProUGUI reqTxt = planetBtn?.transform.GetChild(0)?.GetComponent<TextMeshProUGUI>();
-            if (reqTxt) reqTxt.text = $"Nüfus: {item.requiredPopulation}";
+            if (reqTxt) reqTxt.text = $"{item.requiredPopulation}";
 
             spawnedItems.Add(uiItem);
         }
@@ -161,11 +165,14 @@ public class DecorationController : MonoBehaviour
             {
                 target.gameObject.SetActive(true);
                 SaveSystem.AddActiveObject(childName);     // KAYIT
-                RemoveItemFromList(childName);             // Butonu listeden sil
+                RemoveItemFromList(childName);   
+                UpdateDecorationProgress(planetData.items);
                 CheckPlanetCollectionComplete(planetData.planetName);
                 return;
             }
         }
+        if (planetData != null)
+            UpdateDecorationProgress(planetData.items);
         Debug.LogWarning($"Child obje bulunamadı: {childName}");
     }
     /// <summary>
@@ -240,7 +247,7 @@ public class DecorationController : MonoBehaviour
     /*──────────────────────────── U I   Y A R D I M C I L A R ─────────────────────────*/
     private void UpdatePopulationText(int pop)
     {
-        if (populationText) populationText.text = $"Population: {pop}";
+        if (populationText) populationText.text = $"{pop}";
     }
 
     private void ShowWarning(string msg)
@@ -256,6 +263,25 @@ public class DecorationController : MonoBehaviour
     {
         foreach (var go in spawnedItems) Destroy(go);
         spawnedItems.Clear();
+    }
+    private void UpdateDecorationProgress(List<ClickablePlanetDatabase.DecorationItem> items)
+    {
+        // Kaç dekorasyon unlock oldu?
+        int unlocked = 0;
+        foreach (var item in items)
+        {
+            if (SaveSystem.IsObjectActive(item.decorationName))
+                unlocked++;
+        }
+
+        int total = items.Count;
+        float fill = total == 0 ? 0f : (float)unlocked / total;
+
+        if (decorationProgressFill)
+            decorationProgressFill.fillAmount = fill;
+
+        if (decorationProgressText)
+            decorationProgressText.text = $"{unlocked} / {total}";
     }
 
     /*───────────────────────────────── U I  N A V I ──────────────────────────────────*/
