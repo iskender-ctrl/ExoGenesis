@@ -2705,7 +2705,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fuelBar: {fileID: 1177217322}
   fuelText: {fileID: 0}
-  maxFuel: 5
+  sessionMaxFuel: 0
 --- !u!1 &1390075841
 GameObject:
   m_ObjectHideFlags: 0
