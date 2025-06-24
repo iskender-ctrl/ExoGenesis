@@ -77,47 +77,75 @@ public class IAPManager : MonoBehaviour, IStoreListener
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
     {
         string productId = args.purchasedProduct.definition.id;
+        decimal priceDec = args.purchasedProduct.metadata.localizedPrice;
+        int price = Mathf.RoundToInt((float)priceDec);   // Örn. 3.99 → 4
+
         switch (productId)
         {
+            /* ─────  No-Ads  ───── */
             case "removeads":
-                Debug.Log("NO ADS PURCHASE");
+                // Oyuncudan reklamları kaldır…
+                // RemoveAdsForever();    // ← varsa kendi fonksiyonun
+                FirebaseEventManager.LogNoAdsPurchased(price);
                 break;
+
+            /* ─────  Jeton/Fuel paketleri  ───── */
             case "buy100coin":
                 GrantCoins(100);
+                FirebaseEventManager.LogItemPurchased(productId, price);
                 break;
+
             case "buy200coin":
                 GrantCoins(200);
+                FirebaseEventManager.LogItemPurchased(productId, price);
                 break;
+
             case "buy5fuel":
                 GrantFuel(5);
+                FirebaseEventManager.LogItemPurchased(productId, price);
                 break;
+
             case "buy10fuel":
                 GrantFuel(10);
+                FirebaseEventManager.LogItemPurchased(productId, price);
                 break;
+
             case "buy5fuel100coin":
                 GrantFuel(5);
                 GrantCoins(100);
+                FirebaseEventManager.LogItemPurchased(productId, price);
                 break;
+
             case "buy5fuel200coin":
                 GrantFuel(5);
                 GrantCoins(200);
-                break;   // ← BU EKSİKTİ!
+                FirebaseEventManager.LogItemPurchased(productId, price);
+                break;
+
             case "buy10fuel100coin":
                 GrantFuel(10);
                 GrantCoins(100);
-                break;   // ← BU EKSİKTİ!
+                FirebaseEventManager.LogItemPurchased(productId, price);
+                break;
+
             case "buy10fuel200coin":
                 GrantFuel(10);
                 GrantCoins(200);
+                FirebaseEventManager.LogItemPurchased(productId, price);
                 break;
+
+            /* ─────  Özel roket  ───── */
             case "rocketsisko":
                 GrantRocket("İskender");
+                FirebaseEventManager.LogItemPurchased(productId, price);
                 break;
+
+            /* ─────  Bilinmeyen  ───── */
             default:
                 Debug.LogWarning($"Bilinmeyen ürün: {productId}");
+                FirebaseEventManager.LogItemPurchased(productId, price);
                 break;
         }
-
 
         return PurchaseProcessingResult.Complete;
     }

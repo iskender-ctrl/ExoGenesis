@@ -28,6 +28,8 @@ public class LevelManager : MonoBehaviour
 
     private bool _panelReachedTarget = false;
     private bool _alreadyScored = false;
+    private AdCounter adCounter;
+    public int coinsPerLevelComplete;
 
     private void Awake()
     {
@@ -37,10 +39,13 @@ public class LevelManager : MonoBehaviour
             return;
         }
         Instance = this;
+        adCounter = new AdCounter();
+        adCounter.LoadFromPrefs();
     }
 
     void Start()
     {
+        FirebaseEventManager.LogLevelStart(PlayerDataManager.GetLevel());
         if (successPanel != null)
             successPanel.SetActive(false);
 
@@ -84,6 +89,8 @@ public class LevelManager : MonoBehaviour
 
         IncreasePlanetPopulation(targetPlanetName, 10);
         Debug.Log($"🎯 Başarılı atış! {targetPlanetName} +10 nüfus");
+        PlayerDataManager.AddCoins(coinsPerLevelComplete);
+        FirebaseEventManager.LogRewardClaimed("shot_coin_" + coinsPerLevelComplete);
 
         // Seviye ilerleme hesabı HÂLÂ yapılıyor
         int currentPopulation = LoadPlanetPopulation(targetPlanetName, 0);
@@ -150,16 +157,21 @@ public class LevelManager : MonoBehaviour
     }
     private void OnContinueClicked()
     {
-        // Butonları geçici disable et (çift tıklama engeli)
-        continueButton.interactable = false;
-        mainMenuButton.interactable = false;
+        continueButton.interactable = mainMenuButton.interactable = false;
 
-        AdManager.Instance.ShowInterstitial(() =>
+        // 5-li sayaca göre reklam göster; true dönerse
+        // reklam tamamlandığında Level geçişi yapılacak
+        if (adCounter.TryShowAdOnContinue())
         {
-            continueButton.interactable = true;
-            mainMenuButton.interactable = true;
-            LoadNextLevel(); // Devam et
-        });
+            // AdManager’a callback vermediğimiz için burada
+            // küçük gecikme ekleyip sonra geçiş yapabiliriz.
+            Invoke(nameof(LoadNextLevel), 0.1f);
+            FirebaseEventManager.LogAdWatched("interstitial");
+        }
+        else
+        {
+            LoadNextLevel();
+        }
     }
 
     private void OnMainMenuClicked()
@@ -172,6 +184,7 @@ public class LevelManager : MonoBehaviour
             continueButton.interactable = true;
             mainMenuButton.interactable = true;
             SceneManager.LoadScene("MainMenu"); // Ana menüye dön
+            FirebaseEventManager.LogAdWatched("interstitial");
         });
     }
     private void DelayedShowSuccessPanel()
@@ -192,6 +205,7 @@ public class LevelManager : MonoBehaviour
             {
                 fuelSystem.AddFuel(1); // Reklam izleyince 1 yakıt
                 RestartLevel();        // Sahneyi yeniden başlat
+                FirebaseEventManager.LogRewardClaimed("fuel");
             });
 
             return;

@@ -5,71 +5,84 @@ using TMPro;
 
 public class MainMenuController : MonoBehaviour
 {
-    public GameObject[] panels; // Artık RectTransform değil, GameObject
-    public Button[] buttons;
+    [Header("Panel-Buton Dizileri")]
+    public GameObject[] panels;      // Her panel bir GameObject
+    public Button[] buttons;     // Aynı sırada, bir buton = bir panel
+
+    [Header("Buton Ölçek")]
     public float buttonScaleSelected = 1.2f;
     public float buttonScaleDefault = 1.0f;
-    public float buttonAnimationDuration = 0.3f;
-    public TextMeshProUGUI fuelText, coinsText;
+    public float animDuration = 0.3f;
 
-    private int currentPanelIndex = 1;
+    [Header("BG Genişlik")]
+    public float selectedWidth = 250f;      // Seçili butonun BG genişliği (px)
+    public Ease widthEase = Ease.OutBack;
 
+    [Header("Bilgi Metinleri")]
+    public TextMeshProUGUI fuelText;
+    public TextMeshProUGUI coinsText;
+
+    /* ─────────── dahili ─────────── */
+    int currentPanelIndex = 1;
+    RectTransform[] parentRTs;          // her butonun parent RectTransform’i
+    float[] originalWidths;    // parent’in ilk genişliği
+
+    /* ─────────── Unity ─────────── */
     void Start()
     {
-        // Tüm panellerin aktifliğini ayarla
+        /* 1) paneller – sadece current açık */
         for (int i = 0; i < panels.Length; i++)
-        {
-            panels[i].SetActive(i == currentPanelIndex); // Sadece home aktif
-        }
+            panels[i].SetActive(i == currentPanelIndex);
 
+        /* 2) UI dinleyiciler */
         UpdateCoinsUI(PlayerDataManager.GetCoins());
         UpdateFuelUI(PlayerDataManager.GetFuel());
-
         PlayerDataManager.OnCoinsChanged += UpdateCoinsUI;
         PlayerDataManager.OnFuelChanged += UpdateFuelUI;
 
+        /* 3) parent genişliklerini sakla + click ekle */
+        parentRTs = new RectTransform[buttons.Length];
+        originalWidths = new float[buttons.Length];
+
         for (int i = 0; i < buttons.Length; i++)
         {
-            int index = i;
-            buttons[i].onClick.AddListener(() => MoveToPanel(index));
+            int idx = i;
+
+            parentRTs[i] = buttons[i].transform.parent.GetComponent<RectTransform>();
+            originalWidths[i] = parentRTs[i].sizeDelta.x;
+
+            buttons[i].onClick.AddListener(() => MoveToPanel(idx));
         }
 
-        UpdateButtonScales();
+        UpdateButtonVisuals();   // ilk vurgulama
     }
 
-    public void MoveToPanel(int targetPanelIndex)
+    /* ─────────── Panel Geçişi ─────────── */
+    public void MoveToPanel(int target)
     {
-        if (targetPanelIndex < 0 || targetPanelIndex >= panels.Length)
-        {
-            Debug.LogWarning("Geçersiz panel indexi!");
-            return;
-        }
+        if (target == currentPanelIndex || target < 0 || target >= panels.Length) return;
 
-        if (targetPanelIndex == currentPanelIndex) return;
+        panels[currentPanelIndex].SetActive(false);
+        panels[target].SetActive(true);
 
-        // Panelleri aktif/inaktif yap
-        for (int i = 0; i < panels.Length; i++)
-        {
-            panels[i].SetActive(i == targetPanelIndex);
-        }
-
-        currentPanelIndex = targetPanelIndex;
-
-        UpdateButtonScales();
+        currentPanelIndex = target;
+        UpdateButtonVisuals();
     }
 
-    private void UpdateButtonScales()
+    /* ─────────── Ölçek + BG genişliği ─────────── */
+    void UpdateButtonVisuals()
     {
         for (int i = 0; i < buttons.Length; i++)
         {
-            if (i == currentPanelIndex)
-            {
-                buttons[i].transform.DOScale(buttonScaleSelected, buttonAnimationDuration).SetEase(Ease.OutBack);
-            }
-            else
-            {
-                buttons[i].transform.DOScale(buttonScaleDefault, buttonAnimationDuration).SetEase(Ease.InOutCubic);
-            }
+            /* 1️⃣ BG genişliği sadece parent’ta */
+            float targetW = (i == currentPanelIndex) ? selectedWidth : originalWidths[i];
+            Vector2 size = parentRTs[i].sizeDelta; size.x = targetW;
+
+            parentRTs[i].DOSizeDelta(size, animDuration).SetEase(widthEase);
+
+            /* 2️⃣ Buton ölçeği (eski davranış) */
+            float scale = (i == currentPanelIndex) ? buttonScaleSelected : buttonScaleDefault;
+            buttons[i].transform.DOScale(scale, animDuration).SetEase(Ease.InOutCubic);
         }
     }
 
@@ -82,7 +95,7 @@ public class MainMenuController : MonoBehaviour
     {
         float maxFuel = 5f; // FuelSystem içinde de bu kullanılıyor
         int percent = Mathf.RoundToInt((fuel / maxFuel) * 100f);
-        fuelText.text = fuel.ToString("F1"); 
+        fuelText.text = fuel.ToString("F1");
         //fuelText.text = "%" + percent;
     }
 }

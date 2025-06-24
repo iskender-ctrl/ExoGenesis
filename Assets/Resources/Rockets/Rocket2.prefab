@@ -133,7 +133,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 308d9ea2651088c4d9d717982f96dd88, type: 3}
       propertyPath: m_Name
-      value: Nigar
+      value: Rocket2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -184,8 +184,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.032838553, y: 0.032660615, z: 0.059401225}
-  m_Center: {x: -0.00012674331, y: -0.00025787592, z: 0.007868976}
+  m_Size: {x: 0.021000853, y: 0.032660615, z: 0.05453717}
+  m_Center: {x: 0.0008504091, y: -0.0002578754, z: 0.006456777}
 --- !u!54 &1541498730631829600
 Rigidbody:
   m_ObjectHideFlags: 0

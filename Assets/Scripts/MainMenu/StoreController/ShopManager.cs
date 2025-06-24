@@ -53,6 +53,7 @@ public class ShopManager : MonoBehaviour
         {
             PlayerDataManager.RemoveCoins(rocket.price);
             GrantRocket(rocket, shopItem);
+            FirebaseEventManager.LogItemPurchased(rocket.rocketName, rocket.price);
         }
         else
         {

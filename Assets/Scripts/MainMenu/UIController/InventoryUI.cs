@@ -86,25 +86,29 @@ public class InventoryUI : MonoBehaviour
     {
         PlayerPrefs.SetString("SelectedRocket", rocketName);
         PlayerPrefs.Save();
-
         selectedRocket = rocketName;
-        Debug.Log("🚀 Seçilen Roket: " + rocketName);
-
+        FirebaseEventManager.LogItemPurchased("rocket_selected", 0);
+        
         foreach (Transform child in rocketContainer)
         {
+            // Rocket adını UI’dan çek
+            string name = child.Find("RocketName").GetComponent<TextMeshProUGUI>().text;
+
             Button btn = child.GetComponent<Button>();
-            if (btn != null)
-                btn.interactable = false;  // Önce hepsi pasif
+            if (btn == null) continue;
+
+            // Satın alınmışsa aktif bırak, değilse pasifle
+            bool hasRocket = InventoryManager.Instance.HasRocket(name);
+            btn.interactable = hasRocket;
+
             ResetRocketUI(child.gameObject);
         }
 
-        // Sadece seçileni aktif yap ve vurgula
-        Button selectedBtn = selectedItem.GetComponent<Button>();
-        if (selectedBtn != null)
-            selectedBtn.interactable = true;
-
+        // Seçili roketi vurgula
         HighlightSelectedRocket(selectedItem);
+
         popupManager.ClosePopup(popupUI);
+        Debug.Log("🚀 Seçilen Roket: " + rocketName);
     }
 
     private void LoadSelectedRocket()

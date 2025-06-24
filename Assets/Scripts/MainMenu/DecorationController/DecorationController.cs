@@ -142,7 +142,7 @@ public class DecorationController : MonoBehaviour
     /*────────────────────────── D E K O R A S Y O N  A C M A ─────────────────────────*/
     public void ActivateChild(string childName)
     {
-        decorationPopUp.SetActive(false);
+        GetComponent<PopupManager>().ClosePopup(decorationPopUp.transform);
 
         var planetData = MapDecorationController.Instance.planetDatabase.planets
             .Find(p => p.planetName == MapDecorationController.Instance.planetName);
@@ -164,6 +164,7 @@ public class DecorationController : MonoBehaviour
             if (target != null)
             {
                 target.gameObject.SetActive(true);
+                FirebaseEventManager.LogDecorationPlaced(childName);
                 SaveSystem.AddActiveObject(childName);     // KAYIT
                 RemoveItemFromList(childName);   
                 UpdateDecorationProgress(planetData.items);

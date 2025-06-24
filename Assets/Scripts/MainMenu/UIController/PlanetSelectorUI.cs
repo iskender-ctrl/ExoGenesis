@@ -4,12 +4,15 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using DG.Tweening;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
-public class PlanetSelectorUI : MonoBehaviour
+public class PlanetSelectorUI : MonoBehaviour,
+                                 IBeginDragHandler, IDragHandler, IEndDragHandler
 {
+    /*───────────────────────────── Inspector Bağlantıları ─────────────────────────────*/
     [Header("References")]
-    public RectTransform planetsContainer;
-    public List<RectTransform> planetButtons = new List<RectTransform>();
+    public RectTransform planetsContainer;          // Gezegen butonlarının parent'ı
+    public List<RectTransform> planetButtons;       // Her gezegen butonu (RectTransform)
     public Button decorateButton;
     public Button playButton;
 
@@ -25,8 +28,9 @@ public class PlanetSelectorUI : MonoBehaviour
     [Header("Info Panel")]
     public GameObject planetClickPanel;
 
-    [Header("Settings")]
-    public float spacing = 300f;
+    /*───────────────────────────── Ayarlar ─────────────────────────────*/
+    [Header("Layout Settings")]
+    public float spacing = 300f;          // Butonlar arası mesafe
     public float selectedScale = 1.2f;
     public float defaultScale = 1f;
     public float selectedY = 233.44f;
@@ -34,165 +38,201 @@ public class PlanetSelectorUI : MonoBehaviour
     public float transitionDuration = 0.4f;
     public float rotationSpeed = 7f;
 
+    [Header("Swipe Settings")]
+    public float swipeThreshold = 80f;    // Piksel – bu mesafeden büyük sürükleme sayfa çevirir
+    public float dragFollowFactor = 0.5f; // Sürüklerken hareket hızı (0–1 arası)
+
     [Header("Database")]
     public ClickablePlanetDatabase planetDatabase;
 
-    private int currentIndex = 0;
+    /*───────────────────────────── Runtime ─────────────────────────────*/
+    private int currentIndex;
+    private Vector2 dragStartPos;
+    private float containerStartX;
+    private bool isDragging;
 
-    void Start()
+    /*───────────────────────────── Unity Life-cycle ─────────────────────────────*/
+    private void Start()
     {
         SetupButtonEvents();
         ApplyUnlockStates();
-        ScrollToPlanet(currentIndex); // İlk pozisyon
+
+        currentIndex = Mathf.Clamp(currentIndex, 0, planetButtons.Count - 1);
+        ScrollToPlanet(currentIndex, 0f);   // Başlangıç yerleşimi
         RefreshUI();
 
-        leftButton.onClick.AddListener(() =>
-   {
-       PlayClickFeedback(leftButton.transform);          // ✨ efekt
-       int newIndex = Mathf.Clamp(currentIndex - 1, 0, planetButtons.Count - 1);
-       if (newIndex != currentIndex)
-       {
-           currentIndex = newIndex;
-           ScrollToPlanet(currentIndex);
-           RefreshUI();
-       }
-   });
-
-        rightButton.onClick.AddListener(() =>
-        {
-            PlayClickFeedback(rightButton.transform);         // ✨ efekt
-            int newIndex = Mathf.Clamp(currentIndex + 1, 0, planetButtons.Count - 1);
-            if (newIndex != currentIndex)
-            {
-                currentIndex = newIndex;
-                ScrollToPlanet(currentIndex);
-                RefreshUI();
-            }
-        });
+        leftButton.onClick.AddListener(() => MoveByButton(-1));
+        rightButton.onClick.AddListener(() => MoveByButton(+1));
 
         playButton.onClick.AddListener(() =>
         {
             Debug.Log("Play clicked for " + planetDatabase.planets[currentIndex].planetName);
-            // SceneManager.LoadScene(...) çağrısı yapılabilir
+            // SceneManager.LoadScene(...)  // kendi oynanış sahneni burada çağırabilirsin
         });
 
         decorateButton.onClick.AddListener(() =>
         {
-            string selectedPlanet = planetDatabase.planets[currentIndex].planetName;
-            MapDecorationController.Instance.planetName = selectedPlanet;
-            SceneManager.LoadSceneAsync(2);
+            string planetName = planetDatabase.planets[currentIndex].planetName;
+            MapDecorationController.Instance.planetName = planetName;
+            SceneManager.LoadSceneAsync(2);  // Decoration sahnesi
         });
     }
+
     private void Update()
     {
+        // SaveSystem DataDirty → bar / ilerleme yeniden çizilsin
         if (SaveSystem.DataDirty)
         {
-            SaveSystem.ClearDirty();  // bayrağı sıfırla
-            RefreshUI();              // veriyi tekrar oku, barı güncelle
+            SaveSystem.ClearDirty();
+            RefreshUI();
         }
 
-        // Planets listesindeki tüm objeleri y ekseninde döndür
-        foreach (var planetRect in planetButtons)
-        {
-            if (planetRect != null)
-            {
-                planetRect.Rotate(0f, rotationSpeed * Time.deltaTime, 0f);
-            }
-        }
+        // Bütün gezegen görsellerini kendi ekseninde döndür
+        foreach (var pr in planetButtons)
+            pr.Rotate(0f, rotationSpeed * Time.deltaTime, 0f);
     }
+
+    /*───────────────────────────── Swipe (Drag) Kontrolleri ───────────────────────────*/
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        isDragging = true;
+        dragStartPos = eventData.position;
+        containerStartX = planetsContainer.anchoredPosition.x;
+
+        if (planetClickPanel) planetClickPanel.SetActive(false);
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (!isDragging) return;
+
+        float deltaX = eventData.position.x - dragStartPos.x;
+        planetsContainer.anchoredPosition = new Vector2(
+            containerStartX + deltaX * dragFollowFactor,
+            planetsContainer.anchoredPosition.y);
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if (!isDragging) return;
+        isDragging = false;
+
+        float deltaX = eventData.position.x - dragStartPos.x;
+
+        if (Mathf.Abs(deltaX) >= swipeThreshold)
+        {
+            int dir = deltaX > 0 ? -1 : +1;
+            currentIndex = Mathf.Clamp(currentIndex + dir, 0, planetButtons.Count - 1);
+        }
+
+        /* ----- Kritik düzeltme: container'ı merkeze çek ------ */
+        planetsContainer.anchoredPosition = Vector2.zero;
+        /* ----------------------------------------------------- */
+
+        ScrollToPlanet(currentIndex);
+        RefreshUI();
+    }
+
+
+    /*───────────────────────────── Ok Düğmeleri ─────────────────────────────*/
+    private void MoveByButton(int step)
+    {
+        int newIndex = Mathf.Clamp(currentIndex + step, 0, planetButtons.Count - 1);
+        if (newIndex == currentIndex) return;
+
+        PlayClickFeedback(step < 0 ? leftButton.transform : rightButton.transform);
+        currentIndex = newIndex;
+        ScrollToPlanet(currentIndex);
+        RefreshUI();
+    }
+
     private void PlayClickFeedback(Transform btn)
     {
-        const float clickScale = 0.8f;   // ne kadar küçülsün?
-        const float clickTime = 0.07f;  // in-out süresi
-
-        // Küçül → geri büyü sekansı
-        btn.DOScale(clickScale, clickTime)
-           .SetEase(Ease.InQuad)
-           .OnComplete(() => btn.DOScale(1f, clickTime).SetEase(Ease.OutQuad));
-    }
-    void SetupButtonEvents()
-    {
-        for (int i = 0; i < planetButtons.Count; i++)
-        {
-            int index = i;
-            Button b = planetButtons[i].GetComponent<Button>();
-            if (b != null)
-            {
-                b.onClick.AddListener(() =>
-                {
-                    currentIndex = index;
-                    ScrollToPlanet(index);
-                    RefreshUI();
-                });
-            }
-        }
+        btn.DOComplete();
+        btn.DOPunchScale(Vector3.one * -0.2f, 0.15f, 1, 0f);
     }
 
-    void ScrollToPlanet(int index)
+    /*───────────────────────────── Ana Yerleşim / Animasyon ──────────────────────────*/
+    private void ScrollToPlanet(int index, float durationOverride = -1f)
     {
-        if (planetClickPanel != null)
-            planetClickPanel.SetActive(false);
+        float dur = durationOverride >= 0f ? durationOverride : transitionDuration;
 
         for (int i = 0; i < planetButtons.Count; i++)
         {
             float offsetX = (i - index) * spacing;
-            float targetY = (i == index) ? selectedY : defaultY;
-            float targetScale = (i == index) ? selectedScale : defaultScale;
+            float targetY = i == index ? selectedY : defaultY;
+            float targetScale = i == index ? selectedScale : defaultScale;
 
-            planetButtons[i].DOAnchorPos(new Vector2(offsetX, targetY), transitionDuration).SetEase(Ease.OutCubic);
-            planetButtons[i].DOScale(targetScale, transitionDuration).SetEase(Ease.OutBack);
+            planetButtons[i]
+                .DOAnchorPos(new Vector2(offsetX, targetY), dur)
+                .SetEase(Ease.OutCubic);
+
+            planetButtons[i]
+                .DOScale(targetScale, dur)
+                .SetEase(Ease.OutBack);
         }
 
-        DOVirtual.DelayedCall(transitionDuration, () =>
+        DOVirtual.DelayedCall(dur, () =>
         {
-            if (planetClickPanel != null)
-                planetClickPanel.SetActive(true);
+            if (planetClickPanel) planetClickPanel.SetActive(true);
         });
+        FirebaseEventManager.LogPlanetSelected(planetDatabase.planets[index].planetName);
     }
 
+    /*───────────────────────────── UI Güncelleme ─────────────────────────────*/
     public void RefreshUI()
     {
         var data = planetDatabase.planets[currentIndex];
+
         planetNameText.text = data.planetName;
 
-        float progress = PlanetProgressUtil.GetProgress(data);
-        progressFill.fillAmount = progress;
-        progressText.text = Mathf.RoundToInt(progress * 100f) + "%";
+        float prog = PlanetProgressUtil.GetProgress(data);
+        progressFill.fillAmount = prog;
+        progressText.text = Mathf.RoundToInt(prog * 100f) + "%";
 
-        // Yeni kontrol: planet button aktifse, alt butonlar da aktif
-        bool planetInteractable = planetButtons[currentIndex].GetComponent<Button>().interactable;
-
-        decorateButton.interactable = planetInteractable;
-        playButton.interactable = planetInteractable;
+        bool interactable = planetButtons[currentIndex].GetComponent<Button>().interactable;
+        decorateButton.interactable = interactable;
+        playButton.interactable = interactable;
     }
 
-    void ApplyUnlockStates()
+    /*───────────────────────────── Başlangıç Ayarları ───────────────────────────────*/
+    private void SetupButtonEvents()
     {
-        // PlayerDataManager.GetLevel()  => 1, 2, 3 …   (1-den başlıyorsa)
+        for (int i = 0; i < planetButtons.Count; i++)
+        {
+            int idx = i;
+            Button b = planetButtons[i].GetComponent<Button>();
+            if (b == null) continue;
+
+            b.onClick.AddListener(() =>
+            {
+                currentIndex = idx;
+                ScrollToPlanet(idx);
+                RefreshUI();
+            });
+        }
+    }
+
+    private void ApplyUnlockStates()
+    {
         int playerLevel = Mathf.Max(PlayerDataManager.GetLevel(), 1);
 
         for (int i = 0; i < planetButtons.Count; i++)
         {
             Button btn = planetButtons[i].GetComponent<Button>();
-            if (btn == null) continue;
-
-            // Örnek: level 1 → yalnızca index 0 (ilk gezegen) açık
-            //        level 2 → index 0 ve 1 açık
-            btn.interactable = (i < playerLevel);
+            if (btn) btn.interactable = i < playerLevel;
         }
 
-        // Scroll pozisyonu seçili gezegen kilitliyse ilk açık olana dön
         if (!planetButtons[currentIndex].GetComponent<Button>().interactable)
-        {
-            SelectPlanetByScroll(playerLevel - 1);  // son açık gezegene zıpla
-        }
+            SelectPlanetByScroll(playerLevel - 1);
     }
 
-
-    bool IsPlanetUnlocked(int index)
+    /*───────────────────────────── Helper Fonksiyonlar ──────────────────────────────*/
+    public void SelectPlanetByScroll(int index)
     {
-        int unlockedUpTo = PlayerPrefs.GetInt("UnlockedPlanetIndex", 0);
-        return index <= unlockedUpTo;
+        currentIndex = Mathf.Clamp(index, 0, planetButtons.Count - 1);
+        ScrollToPlanet(currentIndex);
+        RefreshUI();
     }
 
     public static void UnlockNextPlanet(int currentIndex)
@@ -202,16 +242,6 @@ public class PlanetSelectorUI : MonoBehaviour
         {
             PlayerPrefs.SetInt("UnlockedPlanetIndex", currentIndex + 1);
             PlayerPrefs.Save();
-        }
-    }
-
-    public void SelectPlanetByScroll(int index)
-    {
-        if (index >= 0 && index < planetButtons.Count)
-        {
-            currentIndex = index;
-            ScrollToPlanet(index);
-            RefreshUI();
         }
     }
 }
